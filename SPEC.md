@@ -1,8 +1,8 @@
 # agents.txt Specification
 
 **Version**: 1.0
-**Status**: Draft
-**Last Updated**: 2025-02-20
+**Status**: Stable
+**Last Updated**: 2026-02-20
 
 ## Abstract
 
