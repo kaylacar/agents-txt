@@ -138,6 +138,19 @@ This auto-discovers the site's capabilities and exposes them as MCP tools. Add t
 
 See [SPEC.md](SPEC.md) for the full agents.txt specification.
 
+## Reference Implementation
+
+[agents-protocol](https://github.com/kaylacar/agents-protocol) is a TypeScript SDK built on top of this standard. It provides:
+
+- **`@agents-protocol/sdk`** — typed capability handlers (search, browse, cart, checkout), session management, and RER audit artifacts, with Express middleware and a fetch-compatible handler for Next.js / Cloudflare / Deno
+- **`@agents-protocol/client`** — a typed agent client with auto-discovery, session lifecycle, pagination, and retry on 429
+
+If you want a batteries-included framework rather than the low-level standard, start there.
+
+## IANA Registration
+
+Well-known URI registrations for `agents.txt` and `agents.json` are filed as IANA submissions (pending review).
+
 ## License
 
 MIT
