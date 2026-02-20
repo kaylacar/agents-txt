@@ -1,7 +1,7 @@
 {
   "name": "@agents-txt/express",
   "version": "0.1.0",
-  "description": "Express middleware for serving agents.txt",
+  "description": "Express middleware for serving agents.txt — one line to make your site AI-agent ready",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -20,8 +20,33 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
+  "keywords": [
+    "agents.txt",
+    "agents-txt",
+    "ai-agents",
+    "express",
+    "middleware",
+    "llm",
+    "mcp",
+    "well-known",
+    "robots-txt",
+    "capability-declaration",
+    "web-standard",
+    "anthropic",
+    "claude",
+    "openai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaylacar/agents-txt.git",
+    "directory": "packages/express"
+  },
+  "homepage": "https://github.com/kaylacar/agents-txt",
+  "bugs": {
+    "url": "https://github.com/kaylacar/agents-txt/issues"
+  },
   "dependencies": {
-    "@agents-txt/core": "workspace:*"
+    "@agents-txt/core": "^0.1.0"
   },
   "peerDependencies": {
     "express": "^4.0.0 || ^5.0.0"

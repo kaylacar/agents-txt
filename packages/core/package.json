@@ -20,6 +20,29 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
+  "keywords": [
+    "agents.txt",
+    "agents-txt",
+    "ai-agents",
+    "llm",
+    "mcp",
+    "well-known",
+    "robots-txt",
+    "capability-declaration",
+    "web-standard",
+    "openai",
+    "anthropic",
+    "claude"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaylacar/agents-txt.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/kaylacar/agents-txt",
+  "bugs": {
+    "url": "https://github.com/kaylacar/agents-txt/issues"
+  },
   "dependencies": {
     "zod": "^3.0.0"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@agents-txt/mcp",
   "version": "0.1.0",
-  "description": "MCP server that wraps any agents.txt-compliant website",
+  "description": "MCP server that wraps any agents.txt-compliant website — instantly usable by Claude Desktop and other MCP clients",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -23,8 +23,32 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
+  "keywords": [
+    "agents.txt",
+    "agents-txt",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "claude-desktop",
+    "ai-agents",
+    "llm",
+    "well-known",
+    "capability-declaration",
+    "web-standard",
+    "anthropic",
+    "openai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaylacar/agents-txt.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://github.com/kaylacar/agents-txt",
+  "bugs": {
+    "url": "https://github.com/kaylacar/agents-txt/issues"
+  },
   "dependencies": {
-    "@agents-txt/core": "workspace:*",
+    "@agents-txt/core": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
