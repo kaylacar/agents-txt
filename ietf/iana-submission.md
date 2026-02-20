@@ -15,7 +15,7 @@ Submit the following registrations (one per form submission).
 **Change controller:** Kayla Car <YOUR_EMAIL_HERE>
 
 **Specification document(s):**
-https://github.com/kaylacar/agents-txt/blob/master/ietf/draft-car-agents-txt-wellknown-00.md
+https://github.com/kaylacar/agents-txt/blob/master/SPEC.md
 
 **Related information:**
 Text-format capability declaration file for AI agent discovery.
@@ -34,7 +34,7 @@ explicitly permitted capabilities.
 **Change controller:** Kayla Car <YOUR_EMAIL_HERE>
 
 **Specification document(s):**
-https://github.com/kaylacar/agents-txt/blob/master/ietf/draft-car-agents-txt-wellknown-00.md
+https://github.com/kaylacar/agents-txt/blob/master/SPEC.md
 
 **Related information:**
 JSON-format companion to agents.txt. Contains equivalent capability
