@@ -142,4 +142,67 @@ describe("parse", () => {
     const result = parse(MINIMAL_DOC);
     expect(result.document?.agents["*"]).toEqual({});
   });
+
+  it("parses Param fields in capabilities", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: search
+  Endpoint: https://test.com/api/search
+  Protocol: REST
+  Param: q (query, string, required) — Search query
+  Param: limit (query, integer) — Max results
+  Param: category (query, string)
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    const params = result.document!.capabilities[0].parameters!;
+    expect(params).toHaveLength(3);
+
+    expect(params[0].name).toBe("q");
+    expect(params[0].in).toBe("query");
+    expect(params[0].type).toBe("string");
+    expect(params[0].required).toBe(true);
+    expect(params[0].description).toBe("Search query");
+
+    expect(params[1].name).toBe("limit");
+    expect(params[1].type).toBe("integer");
+    expect(params[1].required).toBe(false);
+    expect(params[1].description).toBe("Max results");
+
+    expect(params[2].name).toBe("category");
+    expect(params[2].required).toBe(false);
+    expect(params[2].description).toBeUndefined();
+  });
+
+  it("accepts Site-Description, Site-Contact, Site-Privacy-Policy field names", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+Site-Description: A test site
+Site-Contact: test@test.com
+Site-Privacy-Policy: https://test.com/privacy
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.site.description).toBe("A test site");
+    expect(result.document!.site.contact).toBe("test@test.com");
+    expect(result.document!.site.privacyPolicy).toBe("https://test.com/privacy");
+  });
+
+  it("warns on invalid Param format", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: search
+  Endpoint: https://test.com/search
+  Protocol: REST
+  Param: badformat
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Invalid parameter"))).toBe(true);
+  });
 });

@@ -2,8 +2,9 @@
  * Sanitize a value for the agents.txt text format.
  * Prevents newline injection and strips control characters.
  */
-export function sanitizeValue(value: string, maxLength = 500): string {
-  return value
+export function sanitizeValue(value: unknown, maxLength = 500): string {
+  const str = typeof value === "string" ? value : String(value ?? "");
+  return str
     .replace(/[\r\n]/g, " ")
     .replace(/[\x00-\x1f]/g, "")
     .trim()

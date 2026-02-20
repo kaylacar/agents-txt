@@ -69,21 +69,22 @@ export class AgentsTxtClient {
   }
 
   private async fetchText(url: string): Promise<string | null> {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), this.timeout);
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.timeout);
 
+    try {
       const response = await fetch(url, {
         headers: { "User-Agent": this.userAgent },
         signal: controller.signal,
       });
 
-      clearTimeout(timer);
-
       if (!response.ok) return null;
+      // Body read is also covered by the abort signal
       return await response.text();
     } catch {
       return null;
+    } finally {
+      clearTimeout(timer);
     }
   }
 }

@@ -55,6 +55,15 @@ export function generate(doc: AgentsTxtDocument): string {
     if (cap.openapi) {
       lines.push(`  OpenAPI: ${cap.openapi}`);
     }
+    if (cap.parameters) {
+      for (const param of cap.parameters) {
+        const parts = [param.in, param.type];
+        if (param.required) parts.push("required");
+        let line = `  Param: ${param.name} (${parts.join(", ")})`;
+        if (param.description) line += ` — ${sanitizeValue(param.description)}`;
+        lines.push(line);
+      }
+    }
     lines.push("");
   }
 

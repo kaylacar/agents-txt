@@ -2,6 +2,7 @@ import type {
   AgentsTxtDocument,
   Capability,
   AgentPolicy,
+  ParameterDef,
   ParseResult,
   ParseError,
   ParseWarning,
@@ -130,6 +131,16 @@ export function parse(input: string): ParseResult {
         }
         case "Description": currentCapability.description = value; break;
         case "OpenAPI": currentCapability.openapi = value; break;
+        case "Param": {
+          const parsed = parseParam(value);
+          if (parsed) {
+            if (!currentCapability.parameters) currentCapability.parameters = [];
+            currentCapability.parameters.push(parsed);
+          } else {
+            warnings.push({ line: lineNum, field: "Param", message: `Invalid parameter: ${value}` });
+          }
+          break;
+        }
         default:
           warnings.push({ line: lineNum, message: `Unknown capability field: ${key}` });
       }
@@ -176,9 +187,12 @@ export function parse(input: string): ParseResult {
     switch (key) {
       case "Site-Name": site.name = value; break;
       case "Site-URL": site.url = value; break;
-      case "Description": site.description = value; break;
-      case "Contact": site.contact = value; break;
-      case "Privacy-Policy": site.privacyPolicy = value; break;
+      case "Description":
+      case "Site-Description": site.description = value; break;
+      case "Contact":
+      case "Site-Contact": site.contact = value; break;
+      case "Privacy-Policy":
+      case "Site-Privacy-Policy": site.privacyPolicy = value; break;
       case "Allow": allowPaths.push(value); break;
       case "Disallow": disallowPaths.push(value); break;
       case "Agents-JSON": metadata["Agents-JSON"] = value; break;
@@ -229,4 +243,27 @@ export function parse(input: string): ParseResult {
   };
 
   return { success: true, document, errors, warnings };
+}
+
+/**
+ * Parse a Param value like: `q (query, string, required) — Search query`
+ */
+function parseParam(value: string): ParameterDef | null {
+  // Format: name (location, type[, required]) [— description]
+  const match = value.match(
+    /^(\w+)\s*\(\s*(\w+)\s*,\s*(\w+)(?:\s*,\s*(required))?\s*\)(?:\s*—\s*(.+))?$/,
+  );
+  if (!match) return null;
+
+  const [, name, location, type, req, description] = match;
+  const validLocations = new Set(["query", "path", "header", "body"]);
+  if (!validLocations.has(location)) return null;
+
+  return {
+    name,
+    in: location as ParameterDef["in"],
+    type,
+    required: req === "required",
+    description: description?.trim(),
+  };
 }

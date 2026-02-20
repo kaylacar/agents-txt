@@ -71,7 +71,7 @@ export function agentsTxt(options: AgentsTxtOptions) {
 
     // Rate limiting
     if (rateLimiter) {
-      const ip = (req.ip || req.socket.remoteAddress || "unknown") as string;
+      const ip = req.ip ?? req.socket?.remoteAddress ?? "unknown";
       const result = rateLimiter.check(ip);
       res.setHeader("X-RateLimit-Remaining", String(result.remaining));
       if (!result.allowed) {

@@ -2,12 +2,20 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AgentsTxtClient } from "@agents-txt/core";
 import type { AgentsTxtDocument, Capability } from "@agents-txt/core";
 
+export interface ServerOptions {
+  /** Bearer token for authenticated endpoints. */
+  bearerToken?: string;
+  /** API key for authenticated endpoints. */
+  apiKey?: string;
+}
+
 /**
  * Create an MCP server that wraps an agents.txt-compliant website.
  * Each declared capability becomes an MCP tool.
  */
 export async function createAgentsTxtServer(
   targetUrl: string,
+  options: ServerOptions = {},
 ): Promise<{ server: McpServer; document: AgentsTxtDocument }> {
   const client = new AgentsTxtClient();
 
@@ -32,14 +40,40 @@ export async function createAgentsTxtServer(
   // Register a tool for each REST capability
   for (const cap of doc.capabilities) {
     if (cap.protocol === "REST") {
-      registerRestTool(server, cap);
+      registerRestTool(server, cap, options);
     }
   }
 
   return { server, document: doc };
 }
 
-function registerRestTool(server: McpServer, cap: Capability): void {
+function buildAuthHeaders(cap: Capability, options: ServerOptions): Record<string, string> {
+  const headers: Record<string, string> = {};
+
+  if (!cap.auth || cap.auth.type === "none") return headers;
+
+  switch (cap.auth.type) {
+    case "bearer-token":
+      if (options.bearerToken) {
+        headers["Authorization"] = `Bearer ${options.bearerToken}`;
+      }
+      break;
+    case "api-key":
+      if (options.apiKey) {
+        headers["X-API-Key"] = options.apiKey;
+      }
+      break;
+    case "oauth2":
+      if (options.bearerToken) {
+        headers["Authorization"] = `Bearer ${options.bearerToken}`;
+      }
+      break;
+  }
+
+  return headers;
+}
+
+function registerRestTool(server: McpServer, cap: Capability, options: ServerOptions): void {
   // Build input schema from parameters
   const properties: Record<string, { type: string; description?: string }> = {};
   const required: string[] = [];
@@ -59,30 +93,60 @@ function registerRestTool(server: McpServer, cap: Capability): void {
     cap.description,
     properties,
     async (args: Record<string, unknown>) => {
-      // Build URL with query parameters
+      const method = (cap.method ?? "GET").toUpperCase();
       const url = new URL(cap.endpoint);
-      for (const [key, value] of Object.entries(args)) {
-        if (value !== undefined && value !== null) {
-          url.searchParams.set(key, String(value));
+      const authHeaders = buildAuthHeaders(cap, options);
+      const headers: Record<string, string> = {
+        "Accept": "application/json",
+        "User-Agent": "agents-txt-mcp/0.1",
+        ...authHeaders,
+      };
+
+      let body: string | undefined;
+
+      if (method === "GET" || method === "HEAD") {
+        // GET/HEAD: all args go to query string
+        for (const [key, value] of Object.entries(args)) {
+          if (value !== undefined && value !== null) {
+            url.searchParams.set(key, String(value));
+          }
+        }
+      } else {
+        // POST/PUT/PATCH/DELETE: separate query vs body params
+        const bodyArgs: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(args)) {
+          if (value === undefined || value === null) continue;
+          const paramDef = cap.parameters?.find((p) => p.name === key);
+          if (paramDef?.in === "query") {
+            url.searchParams.set(key, String(value));
+          } else {
+            bodyArgs[key] = value;
+          }
+        }
+        if (Object.keys(bodyArgs).length > 0) {
+          headers["Content-Type"] = "application/json";
+          body = JSON.stringify(bodyArgs);
         }
       }
 
       try {
         const response = await fetch(url.toString(), {
-          method: cap.method ?? "GET",
-          headers: {
-            "Accept": "application/json",
-            "User-Agent": "agents-txt-mcp/0.1",
-          },
+          method,
+          headers,
+          body,
         });
+
+        const data = await response.text();
 
         if (!response.ok) {
           return {
-            content: [{ type: "text" as const, text: `Error: HTTP ${response.status} ${response.statusText}` }],
+            content: [{
+              type: "text" as const,
+              text: `Error: HTTP ${response.status} ${response.statusText}\n${data}`,
+            }],
           };
         }
 
-        const data = await response.text();
         return {
           content: [{ type: "text" as const, text: data }],
         };
