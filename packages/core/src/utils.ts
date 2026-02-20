@@ -1,0 +1,27 @@
+/**
+ * Sanitize a value for the agents.txt text format.
+ * Prevents newline injection and strips control characters.
+ */
+export function sanitizeValue(value: string, maxLength = 500): string {
+  return value
+    .replace(/[\r\n]/g, " ")
+    .replace(/[\x00-\x1f]/g, "")
+    .trim()
+    .slice(0, maxLength);
+}
+
+/**
+ * Parse a rate limit string like "60/minute" into a RateLimit object.
+ */
+export function parseRateLimit(value: string): { requests: number; window: string } | null {
+  const match = value.match(/^(\d+)\/(second|minute|hour|day)$/);
+  if (!match) return null;
+  return { requests: parseInt(match[1], 10), window: match[2] };
+}
+
+/**
+ * Format a RateLimit object as a string like "60/minute".
+ */
+export function formatRateLimit(requests: number, window: string): string {
+  return `${requests}/${window}`;
+}
