@@ -151,6 +151,7 @@ Capability: product-search
 | `Protocol` | REQUIRED | One of: `REST`, `MCP`, `A2A`, `GraphQL`, `WebSocket`. |
 | `Auth` | OPTIONAL | Auth type: `none`, `api-key`, `bearer-token`, `oauth2`, `hmac`. Default: `none`. |
 | `Auth-Endpoint` | OPTIONAL | URL where agents obtain tokens. Required for `bearer-token` and `oauth2`. |
+| `Auth-Docs` | OPTIONAL | URL to documentation describing the authentication flow for this capability. |
 | `Rate-Limit` | OPTIONAL | Rate limit in format `N/window` (e.g., `60/minute`). |
 | `Description` | OPTIONAL | Human-readable description of the capability. |
 | `OpenAPI` | OPTIONAL | URL to an OpenAPI specification for this endpoint. |
@@ -350,6 +351,7 @@ Capability: live-updates
 - Secrets are exchanged out-of-band (developer portal, OAuth flow, etc.).
 - The `Auth` field tells agents what type of authentication is needed.
 - The `Auth-Endpoint` field tells agents where to obtain tokens.
+- The `Auth-Docs` field tells agents where to find human-readable documentation for the auth flow.
 
 ### 6.2 Auth Types
 
@@ -360,6 +362,21 @@ Capability: live-updates
 | `bearer-token` | Bearer token required. Obtain from `Auth-Endpoint`. |
 | `oauth2` | OAuth 2.0 flow. `Auth-Endpoint` is the token endpoint. |
 | `hmac` | HMAC signature required. |
+
+### 6.3 Auth-Docs
+
+When the authentication flow for a capability requires steps beyond what `Auth` and `Auth-Endpoint` convey, site owners SHOULD provide an `Auth-Docs` URL pointing to documentation that describes the full flow:
+
+```
+Capability: store-assistant
+  Endpoint: https://example.com/mcp
+  Protocol: MCP
+  Auth: bearer-token
+  Auth-Endpoint: https://example.com/auth/token
+  Auth-Docs: https://example.com/docs/agent-auth
+```
+
+Agents encountering an unfamiliar auth flow SHOULD fetch `Auth-Docs` before failing. The documentation at that URL is site-specific and not part of this standard.
 
 ## 7. Rate Limiting
 

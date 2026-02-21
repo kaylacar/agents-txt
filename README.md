@@ -105,6 +105,44 @@ Make requests to the declared endpoints using the declared method and protocol. 
 
 Each capability declares a rate limit. Agent-specific limits override capability limits. Honor them — servers enforce them independently.
 
+---
+
+### Common auth patterns
+
+The `Auth` field tells you the type. Here is what to expect for each:
+
+**`none`** — No auth needed. Call the endpoint directly.
+
+**`api-key`** — You were issued a key out-of-band (developer portal, email, etc.). Send it as a header:
+```
+X-API-Key: your-key-here
+```
+Some sites use a query parameter instead — check `Auth-Docs` if present.
+
+**`bearer-token`** — POST to the `Auth-Endpoint` to exchange credentials for a token, then send it on every request:
+```
+POST https://example.com/auth/token
+Content-Type: application/json
+{"client_id": "...", "client_secret": "..."}
+
+→ {"access_token": "abc123", "expires_in": 3600}
+
+Authorization: Bearer abc123
+```
+The exact request body varies by site. If `Auth-Docs` is declared, read it first.
+
+**`oauth2`** — Standard OAuth 2.0. For agents, client credentials flow is most common:
+```
+POST https://example.com/oauth/token
+Content-Type: application/x-www-form-urlencoded
+grant_type=client_credentials&client_id=...&client_secret=...
+
+→ {"access_token": "abc123", "token_type": "bearer"}
+```
+Check `Scopes` for required OAuth scopes.
+
+**`hmac`** — Sign each request with a shared secret. The signing scheme varies by site — `Auth-Docs` is required to implement this correctly.
+
 ## Packages
 
 | Package | Description |
