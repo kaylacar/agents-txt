@@ -141,7 +141,7 @@ grant_type=client_credentials&client_id=...&client_secret=...
 ```
 Check `Scopes` for required OAuth scopes.
 
-**`hmac`** — Sign each request with a shared secret. The signing scheme varies by site — `Auth-Docs` is required to implement this correctly.
+**`hmac`** — Sign each request with a shared secret. The signing scheme varies by site. Always provide `Auth-Docs` — without it agents will have to guess.
 
 ## Packages
 
