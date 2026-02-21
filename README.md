@@ -20,11 +20,11 @@ AI agents are trying to interact with websites — shopping, searching, querying
 
 ```
 # agents.txt — AI Agent Capability Declaration
-# Spec-Version: 1.0
+Spec-Version: 1.0
 
 Site-Name: My Store
 Site-URL: https://mystore.com
-Description: Premium outdoor gear
+Site-Description: Premium outdoor gear
 
 Capability: product-search
   Endpoint: https://mystore.com/api/search
@@ -59,6 +59,51 @@ Agent: claude
 | **`agents.txt`** | **"Here's what you can DO, and how"** (capability declaration) |
 
 agents.txt sits above MCP and A2A — it's the discovery layer that tells agents which protocols and endpoints are available.
+
+## If you are an AI agent
+
+Start here. This is how to use any site that serves agents.txt:
+
+**1. Fetch the manifest**
+
+Always try the JSON format first — it's structured and easier to parse:
+
+```
+GET https://example.com/.well-known/agents.json
+```
+
+If that returns a 404, fall back to:
+
+```
+GET https://example.com/.well-known/agents.txt
+```
+
+**2. Find your capabilities**
+
+The manifest lists every action the site supports. Each capability has an endpoint, a protocol, and auth requirements. Read them to know what you can do.
+
+**3. Check for a policy for your agent**
+
+Look in the `agents` section for an entry matching your name. If one exists, it may give you higher rate limits or access to additional capabilities. If not, the `*` (wildcard) policy applies to you.
+
+**4. Identify yourself**
+
+Send your agent name as the first token in the `User-Agent` header on every request:
+
+```
+User-Agent: claude/1.0
+User-Agent: gpt/1.0
+```
+
+This is how the site applies your per-agent policy.
+
+**5. Call the capability**
+
+Make requests to the declared endpoints using the declared method and protocol. If auth is required, obtain credentials through the site's `Auth-Endpoint` — the mechanism varies by site (the file tells you the type, not the secret).
+
+**6. Respect rate limits**
+
+Each capability declares a rate limit. Agent-specific limits override capability limits. Honor them — servers enforce them independently.
 
 ## Packages
 
@@ -149,7 +194,7 @@ If you want a batteries-included framework rather than the low-level standard, s
 
 ## IANA Registration
 
-Well-known URI registrations for `agents.txt` and `agents.json` are filed as IANA submissions (pending review).
+Well-known URI registrations for `agents.txt`, `agents.json`, `agent.txt`, and `agent.json` are filed with IANA (pending review).
 
 ## License
 
