@@ -191,6 +191,8 @@ Disallow: /internal/*
 
 Rules follow `robots.txt` semantics: more specific patterns take precedence. If no access control is specified, all paths referenced by capabilities are implicitly allowed.
 
+Capability endpoint declarations take precedence over `Disallow` directives — if a path is declared as a capability endpoint, it is accessible to agents regardless of a matching `Disallow` pattern. `Disallow` restricts general path access, not declared capabilities.
+
 ### 3.6 Agent Blocks
 
 Agent-specific policies override defaults for named agents.
@@ -399,6 +401,7 @@ Valid windows: `second`, `minute`, `hour`, `day`.
 - Capability-level rate limits apply to that specific endpoint.
 - Agent-level rate limits apply globally to that agent across all capabilities.
 - When both exist, the more restrictive limit applies.
+- If a site serves both `agents.txt` and `ai.txt` and declares rate limits in both, the more restrictive limit applies.
 
 ### 7.3 Rate Limit Headers
 

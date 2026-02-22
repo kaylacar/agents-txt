@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: agents-txt-demo
+    runtime: node
+    rootDir: examples/live-demo
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        generateValue: true
