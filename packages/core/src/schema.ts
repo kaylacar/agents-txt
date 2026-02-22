@@ -12,6 +12,7 @@ export const AuthTypeSchema = z.enum(["none", "api-key", "bearer-token", "oauth2
 export const AuthConfigSchema = z.object({
   type: AuthTypeSchema,
   tokenEndpoint: z.string().url().optional(),
+  docsUrl: z.string().url().optional(),
   scopes: z.array(z.string()).optional(),
 });
 

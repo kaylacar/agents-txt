@@ -116,6 +116,10 @@ export function parse(input: string): ParseResult {
           if (!currentCapability.auth) currentCapability.auth = { type: "bearer-token" };
           currentCapability.auth.tokenEndpoint = value;
           break;
+        case "Auth-Docs":
+          if (!currentCapability.auth) currentCapability.auth = { type: "none" };
+          currentCapability.auth.docsUrl = value;
+          break;
         case "Scopes":
           if (!currentCapability.auth) currentCapability.auth = { type: "oauth2" };
           currentCapability.auth.scopes = value.split(",").map((s) => s.trim());

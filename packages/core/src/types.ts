@@ -71,6 +71,8 @@ export interface AuthConfig {
   type: AuthType;
   /** URL to obtain tokens (for bearer-token or oauth2). */
   tokenEndpoint?: string;
+  /** URL to documentation describing the authentication flow. */
+  docsUrl?: string;
   /** OAuth2 scopes available. */
   scopes?: string[];
 }
