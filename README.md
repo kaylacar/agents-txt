@@ -195,6 +195,23 @@ If you want a batteries-included framework rather than the low-level standard, s
 
 Well-known URI registrations for `agents.txt`, `agents.json`, `agent.txt`, and `agent.json` are filed with IANA (pending review).
 
+## The Stack
+
+These four repos form a governance pipeline for AI agents on the internet: **declared, executed, proven.**
+
+| Repo | Purpose |
+|------|---------|
+| **[agents.txt](https://github.com/kaylacar/agents-txt)** | **Declares what agents can do on a site** |
+| [ai.txt](https://github.com/kaylacar/ai-txt) | Declares AI policy — training, licensing, attribution |
+| [agents-protocol](https://github.com/kaylacar/agents-protocol) | Execution SDK — how agents perform declared actions |
+| [rer](https://github.com/kaylacar/rer) | Cryptographic proof of what agents actually did |
+
+```
+declared (agents.txt / ai.txt) → executed (agents-protocol) → proven (rer)
+```
+
+All four are by the same author and designed to work together.
+
 ## License
 
 MIT
