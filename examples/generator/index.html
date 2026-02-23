@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>agents.txt Generator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+    background: #fafafa;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 40px 20px; }
+  h1 { font-size: 28px; margin-bottom: 8px; }
+  .subtitle { color: #666; margin-bottom: 32px; font-size: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+
+  /* Form */
+  .form-section { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; }
+  .form-section h2 { font-size: 18px; margin-bottom: 16px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; margin-top: 12px; }
+  label:first-of-type { margin-top: 0; }
+  input[type="text"], input[type="email"], input[type="url"], input[type="number"], select {
+    width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
+  }
+  input:focus, select:focus { outline: none; border-color: #333; }
+  .hint { font-size: 12px; color: #888; margin-top: 2px; }
+
+  /* Capabilities */
+  .cap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+  .cap-item { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+  .cap-item input[type="checkbox"] { margin: 0; }
+
+  /* Custom capability */
+  .custom-caps { margin-top: 12px; }
+  .custom-cap-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: center; }
+  .custom-cap-row input { flex: 1; }
+  .btn-small {
+    padding: 4px 10px; font-size: 12px; border: 1px solid #ccc; background: #fff;
+    border-radius: 4px; cursor: pointer;
+  }
+  .btn-small:hover { background: #f0f0f0; }
+  .btn-add { margin-top: 4px; }
+
+  /* Preview */
+  .preview-section { position: sticky; top: 20px; }
+  .preview-section h2 { font-size: 18px; margin-bottom: 12px; }
+  .tabs { display: flex; gap: 0; margin-bottom: 0; }
+  .tab {
+    padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+    border: 1px solid #ccc; border-bottom: none; background: #f5f5f5;
+    border-radius: 6px 6px 0 0;
+  }
+  .tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  .preview-box {
+    background: #1a1a1a; color: #e0e0e0; padding: 16px; border-radius: 0 6px 6px 6px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 13px;
+    line-height: 1.5; white-space: pre-wrap; word-break: break-all;
+    min-height: 300px; max-height: 600px; overflow-y: auto;
+  }
+  .btn-copy {
+    margin-top: 12px; padding: 10px 20px; font-size: 14px; font-weight: 600;
+    background: #1a1a1a; color: #fff; border: none; border-radius: 6px;
+    cursor: pointer; width: 100%;
+  }
+  .btn-copy:hover { background: #333; }
+  .btn-copy.copied { background: #16a34a; }
+
+  /* Agent rules */
+  .agent-rules { margin-top: 12px; }
+  .agent-rule { border: 1px solid #eee; border-radius: 4px; padding: 10px; margin-bottom: 8px; }
+  .agent-rule-header { display: flex; justify-content: space-between; align-items: center; }
+  .agent-rule-header input { width: 120px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>agents.txt Generator</h1>
+  <p class="subtitle">Fill in the form. Copy the output. Upload to <code>/.well-known/</code> on your site.</p>
+
+  <div class="grid">
+    <div>
+      <!-- Site Info -->
+      <div class="form-section">
+        <h2>Your Site</h2>
+        <label for="siteName">Site Name *</label>
+        <input type="text" id="siteName" placeholder="My Store" value="My Store">
+
+        <label for="siteUrl">Site URL *</label>
+        <input type="url" id="siteUrl" placeholder="https://example.com" value="https://example.com">
+
+        <label for="siteDesc">Description</label>
+        <input type="text" id="siteDesc" placeholder="An online store selling handmade ceramics">
+
+        <label for="siteContact">Contact Email</label>
+        <input type="email" id="siteContact" placeholder="hello@example.com">
+      </div>
+
+      <!-- Capabilities -->
+      <div class="form-section" style="margin-top: 16px;">
+        <h2>Capabilities</h2>
+        <p class="hint">What can agents do on your site?</p>
+        <div class="cap-grid">
+          <label class="cap-item"><input type="checkbox" value="search" checked> Search</label>
+          <label class="cap-item"><input type="checkbox" value="browse" checked> Browse</label>
+          <label class="cap-item"><input type="checkbox" value="detail"> Product Detail</label>
+          <label class="cap-item"><input type="checkbox" value="contact"> Contact</label>
+          <label class="cap-item"><input type="checkbox" value="cart"> Cart</label>
+          <label class="cap-item"><input type="checkbox" value="checkout"> Checkout</label>
+        </div>
+
+        <div class="custom-caps">
+          <label>Custom Capabilities</label>
+          <div id="customCaps"></div>
+          <button class="btn-small btn-add" onclick="addCustomCap()">+ Add custom</button>
+        </div>
+      </div>
+
+      <!-- Rate Limit -->
+      <div class="form-section" style="margin-top: 16px;">
+        <h2>Rate Limit</h2>
+        <label for="rateLimit">Default rate limit</label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <input type="number" id="rateLimit" value="60" style="width: 80px;">
+          <span>requests per</span>
+          <select id="rateWindow" style="width: 100px;">
+            <option value="minute" selected>minute</option>
+            <option value="hour">hour</option>
+            <option value="day">day</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Access -->
+      <div class="form-section" style="margin-top: 16px;">
+        <h2>Access Control</h2>
+        <label for="allowPaths">Allow paths (one per line)</label>
+        <input type="text" id="allowPaths" placeholder="/api/*" value="/api/*">
+        <label for="disallowPaths">Disallow paths (one per line)</label>
+        <input type="text" id="disallowPaths" placeholder="/admin/*" value="/admin/*">
+      </div>
+
+      <!-- Agent Rules -->
+      <div class="form-section" style="margin-top: 16px;">
+        <h2>Agent-Specific Rules</h2>
+        <p class="hint">Override rate limits for specific agents (optional)</p>
+        <div id="agentRules">
+          <div class="agent-rule">
+            <div class="agent-rule-header">
+              <div>
+                <label style="margin:0">Agent name</label>
+                <input type="text" class="agent-name" value="claude" style="margin-top:4px">
+              </div>
+              <div>
+                <label style="margin:0">Rate limit</label>
+                <input type="number" class="agent-rate" value="200" style="width:80px;margin-top:4px">
+              </div>
+              <button class="btn-small" onclick="this.closest('.agent-rule').remove(); generate();">x</button>
+            </div>
+          </div>
+        </div>
+        <button class="btn-small btn-add" onclick="addAgentRule()">+ Add agent rule</button>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-section">
+      <h2>Output</h2>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('txt', this)">agents.txt</div>
+        <div class="tab" onclick="switchTab('json', this)">agents.json</div>
+      </div>
+      <div class="preview-box" id="preview"></div>
+      <button class="btn-copy" id="copyBtn" onclick="copyOutput()">Copy to clipboard</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTab = 'txt';
+
+const BUILTIN_CAPS = {
+  search: { endpoint: '/api/search', method: 'GET', desc: 'Search the site by keyword' },
+  browse: { endpoint: '/api/products', method: 'GET', desc: 'Browse items with pagination' },
+  detail: { endpoint: '/api/products/:id', method: 'GET', desc: 'Get details for a specific item' },
+  contact: { endpoint: '/api/contact', method: 'POST', desc: 'Send a message to the site owner' },
+  cart: { endpoint: '/api/cart', method: 'POST', desc: 'Add items to a shopping cart' },
+  checkout: { endpoint: '/api/checkout', method: 'POST', desc: 'Get a checkout URL (human completes payment)' },
+};
+
+function getFormData() {
+  const name = document.getElementById('siteName').value.trim();
+  const url = document.getElementById('siteUrl').value.trim().replace(/\/$/, '');
+  const desc = document.getElementById('siteDesc').value.trim();
+  const contact = document.getElementById('siteContact').value.trim();
+  const rate = parseInt(document.getElementById('rateLimit').value) || 60;
+  const window = document.getElementById('rateWindow').value;
+  const allow = document.getElementById('allowPaths').value.trim();
+  const disallow = document.getElementById('disallowPaths').value.trim();
+
+  const caps = [];
+  document.querySelectorAll('.cap-grid input:checked').forEach(cb => {
+    const id = cb.value;
+    const b = BUILTIN_CAPS[id];
+    caps.push({ id, endpoint: url + b.endpoint, method: b.method, desc: b.desc, rate, window });
+  });
+  document.querySelectorAll('.custom-cap-row').forEach(row => {
+    const id = row.querySelector('.cc-id').value.trim();
+    const ep = row.querySelector('.cc-ep').value.trim();
+    if (id && ep) caps.push({ id, endpoint: ep, method: 'GET', desc: '', rate, window });
+  });
+
+  const agents = [];
+  document.querySelectorAll('.agent-rule').forEach(rule => {
+    const n = rule.querySelector('.agent-name').value.trim();
+    const r = parseInt(rule.querySelector('.agent-rate').value) || rate;
+    if (n) agents.push({ name: n, rate: r, window });
+  });
+
+  return { name, url, desc, contact, caps, rate, window, allow, disallow, agents };
+}
+
+function generateTxt(d) {
+  let out = '# agents.txt — AI Agent Capability Declaration\n';
+  out += 'Spec-Version: 1.0\n\n';
+  out += `Site-Name: ${d.name}\n`;
+  out += `Site-URL: ${d.url}\n`;
+  if (d.desc) out += `Site-Description: ${d.desc}\n`;
+  if (d.contact) out += `Site-Contact: ${d.contact}\n`;
+  out += '\n';
+
+  d.caps.forEach(c => {
+    out += `Capability: ${c.id}\n`;
+    out += `  Endpoint: ${c.endpoint}\n`;
+    out += `  Method: ${c.method}\n`;
+    out += `  Protocol: REST\n`;
+    out += `  Auth: none\n`;
+    out += `  Rate-Limit: ${c.rate}/${c.window}\n`;
+    if (c.desc) out += `  Description: ${c.desc}\n`;
+    out += '\n';
+  });
+
+  if (d.allow) out += `Allow: ${d.allow}\n`;
+  if (d.disallow) out += `Disallow: ${d.disallow}\n`;
+  if (d.allow || d.disallow) out += '\n';
+
+  const capIds = d.caps.map(c => c.id).join(', ');
+  out += `Agent: *\n`;
+  out += `  Rate-Limit: ${d.rate}/${d.window}\n`;
+  out += `  Capabilities: ${capIds}\n`;
+
+  d.agents.forEach(a => {
+    out += `\nAgent: ${a.name}\n`;
+    out += `  Rate-Limit: ${a.rate}/${a.window}\n`;
+    out += `  Capabilities: ${capIds}\n`;
+  });
+
+  return out;
+}
+
+function generateJson(d) {
+  const capIds = d.caps.map(c => c.id);
+  const obj = {
+    specVersion: '1.0',
+    site: { name: d.name, url: d.url },
+    capabilities: d.caps.map(c => ({
+      id: c.id,
+      endpoint: c.endpoint,
+      method: c.method,
+      protocol: 'REST',
+      auth: 'none',
+      rateLimit: { requests: c.rate, window: c.window },
+      ...(c.desc ? { description: c.desc } : {}),
+    })),
+    access: {},
+    agents: [
+      { name: '*', rateLimit: { requests: d.rate, window: d.window }, capabilities: capIds },
+      ...d.agents.map(a => ({
+        name: a.name,
+        rateLimit: { requests: a.rate, window: a.window },
+        capabilities: capIds,
+      })),
+    ],
+  };
+  if (d.desc) obj.site.description = d.desc;
+  if (d.contact) obj.site.contact = d.contact;
+  if (d.allow) obj.access.allow = [d.allow];
+  if (d.disallow) obj.access.disallow = [d.disallow];
+  return JSON.stringify(obj, null, 2);
+}
+
+function generate() {
+  const d = getFormData();
+  const output = currentTab === 'txt' ? generateTxt(d) : generateJson(d);
+  document.getElementById('preview').textContent = output;
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  generate();
+}
+
+function copyOutput() {
+  const text = document.getElementById('preview').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy to clipboard'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function addCustomCap() {
+  const div = document.createElement('div');
+  div.className = 'custom-cap-row';
+  div.innerHTML = '<input type="text" class="cc-id" placeholder="capability-id" oninput="generate()">'
+    + '<input type="text" class="cc-ep" placeholder="https://example.com/api/..." oninput="generate()">'
+    + '<button class="btn-small" onclick="this.parentElement.remove(); generate();">x</button>';
+  document.getElementById('customCaps').appendChild(div);
+}
+
+function addAgentRule() {
+  const div = document.createElement('div');
+  div.className = 'agent-rule';
+  div.innerHTML = '<div class="agent-rule-header">'
+    + '<div><label style="margin:0">Agent name</label><input type="text" class="agent-name" placeholder="gpt" style="margin-top:4px" oninput="generate()"></div>'
+    + '<div><label style="margin:0">Rate limit</label><input type="number" class="agent-rate" value="200" style="width:80px;margin-top:4px" oninput="generate()"></div>'
+    + '<button class="btn-small" onclick="this.closest(\'.agent-rule\').remove(); generate();">x</button>'
+    + '</div>';
+  document.getElementById('agentRules').appendChild(div);
+}
+
+// Live update on any input change
+document.addEventListener('input', generate);
+document.addEventListener('change', generate);
+
+// Initial render
+generate();
+</script>
+</body>
+</html>

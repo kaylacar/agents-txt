@@ -1,0 +1,63 @@
+# agents.txt — AI Agent Capability Declaration
+Spec-Version: 1.0
+
+Site-Name: My SaaS
+Site-URL: https://example.com
+Site-Description: Project management platform with a public API
+Site-Contact: api@example.com
+
+Capability: list-projects
+  Endpoint: https://example.com/api/v1/projects
+  Method: GET
+  Protocol: REST
+  Auth: bearer-token
+  Auth-Endpoint: https://example.com/auth/token
+  Auth-Docs: https://example.com/docs/auth
+  Rate-Limit: 100/minute
+  Description: List projects the authenticated user has access to
+  Param: status (query, string) — Filter by status (active, archived)
+
+Capability: search-tasks
+  Endpoint: https://example.com/api/v1/tasks/search
+  Method: GET
+  Protocol: REST
+  Auth: bearer-token
+  Auth-Endpoint: https://example.com/auth/token
+  Rate-Limit: 60/minute
+  Description: Search tasks across all projects
+  Param: q (query, string, required) — Search query
+  Param: project_id (query, string) — Filter by project
+
+Capability: create-task
+  Endpoint: https://example.com/api/v1/tasks
+  Method: POST
+  Protocol: REST
+  Auth: bearer-token
+  Auth-Endpoint: https://example.com/auth/token
+  Rate-Limit: 30/minute
+  Description: Create a new task in a project
+
+Capability: public-status
+  Endpoint: https://example.com/api/status
+  Method: GET
+  Protocol: REST
+  Auth: none
+  Rate-Limit: 10/minute
+  Description: Check platform status and uptime
+
+Allow: /api/v1/*
+Allow: /api/status
+Disallow: /api/internal/*
+Disallow: /admin/*
+
+Agent: *
+  Rate-Limit: 60/minute
+  Capabilities: public-status
+
+Agent: claude
+  Rate-Limit: 200/minute
+  Capabilities: list-projects, search-tasks, create-task, public-status
+
+Agent: gpt
+  Rate-Limit: 200/minute
+  Capabilities: list-projects, search-tasks, create-task, public-status

@@ -1,0 +1,52 @@
+# agents.txt — AI Agent Capability Declaration
+Spec-Version: 1.0
+
+Site-Name: My Store
+Site-URL: https://example.com
+Site-Description: An online store selling handmade ceramics
+Site-Contact: hello@example.com
+
+Capability: product-search
+  Endpoint: https://example.com/api/search
+  Method: GET
+  Protocol: REST
+  Auth: none
+  Rate-Limit: 60/minute
+  Description: Search the product catalog by keyword
+  Param: q (query, string, required) — Search query
+  Param: limit (query, integer) — Max results, default 20
+
+Capability: browse-products
+  Endpoint: https://example.com/api/products
+  Method: GET
+  Protocol: REST
+  Auth: none
+  Rate-Limit: 120/minute
+  Description: Browse all products with pagination
+  Param: page (query, integer) — Page number, default 1
+  Param: limit (query, integer) — Items per page, default 20
+  Param: category (query, string) — Filter by category
+
+Capability: contact
+  Endpoint: https://example.com/api/contact
+  Method: POST
+  Protocol: REST
+  Auth: none
+  Rate-Limit: 5/minute
+  Description: Send a message to the site owner
+
+Allow: /api/*
+Disallow: /admin/*
+Disallow: /checkout/*
+
+Agent: *
+  Rate-Limit: 60/minute
+  Capabilities: product-search, browse-products, contact
+
+Agent: claude
+  Rate-Limit: 200/minute
+  Capabilities: product-search, browse-products, contact
+
+Agent: gpt
+  Rate-Limit: 200/minute
+  Capabilities: product-search, browse-products, contact

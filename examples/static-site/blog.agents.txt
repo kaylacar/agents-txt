@@ -1,0 +1,42 @@
+# agents.txt — AI Agent Capability Declaration
+Spec-Version: 1.0
+
+Site-Name: My Blog
+Site-URL: https://example.com
+Site-Description: A personal blog about technology and design
+Site-Contact: author@example.com
+
+Capability: search-posts
+  Endpoint: https://example.com/api/search
+  Method: GET
+  Protocol: REST
+  Auth: none
+  Rate-Limit: 30/minute
+  Description: Search blog posts by keyword
+  Param: q (query, string, required) — Search query
+
+Capability: browse-posts
+  Endpoint: https://example.com/api/posts
+  Method: GET
+  Protocol: REST
+  Auth: none
+  Rate-Limit: 60/minute
+  Description: Browse recent posts with pagination
+  Param: page (query, integer) — Page number
+  Param: tag (query, string) — Filter by tag
+
+Capability: contact
+  Endpoint: https://example.com/api/contact
+  Method: POST
+  Protocol: REST
+  Auth: none
+  Rate-Limit: 3/minute
+  Description: Send a message to the author
+
+Allow: /api/*
+Disallow: /admin/*
+Disallow: /drafts/*
+
+Agent: *
+  Rate-Limit: 30/minute
+  Capabilities: search-posts, browse-posts, contact
