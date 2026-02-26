@@ -271,24 +271,21 @@ function generateJson(d) {
       endpoint: c.endpoint,
       method: c.method,
       protocol: 'REST',
-      auth: 'none',
+      auth: { type: 'none' },
       rateLimit: { requests: c.rate, window: c.window },
       ...(c.desc ? { description: c.desc } : {}),
     })),
     access: {},
-    agents: [
-      { name: '*', rateLimit: { requests: d.rate, window: d.window }, capabilities: capIds },
-      ...d.agents.map(a => ({
-        name: a.name,
-        rateLimit: { requests: a.rate, window: a.window },
-        capabilities: capIds,
-      })),
-    ],
+    agents: {},
   };
   if (d.desc) obj.site.description = d.desc;
   if (d.contact) obj.site.contact = d.contact;
   if (d.allow) obj.access.allow = [d.allow];
   if (d.disallow) obj.access.disallow = [d.disallow];
+  obj.agents['*'] = { rateLimit: { requests: d.rate, window: d.window }, capabilities: capIds };
+  d.agents.forEach(a => {
+    obj.agents[a.name] = { rateLimit: { requests: a.rate, window: a.window }, capabilities: capIds };
+  });
   return JSON.stringify(obj, null, 2);
 }
 

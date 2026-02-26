@@ -34,11 +34,11 @@ Place this at `/.well-known/agents.txt`:
 
 ```
 # agents.txt — AI Agent Capability Declaration
-# Spec-Version: 1.0
+Spec-Version: 1.0
 
 Site-Name: My Store
 Site-URL: https://mystore.com
-Description: Premium outdoor gear
+Site-Description: Premium outdoor gear
 
 Capability: product-search
   Endpoint: https://mystore.com/api/search
@@ -52,15 +52,12 @@ Capability: store-assistant
   Endpoint: https://mystore.com/mcp
   Protocol: MCP
   Auth: bearer-token
-
-Session:
-  Create: https://mystore.com/api/session
-  Delete: https://mystore.com/api/session
-  TTL: 3600
+  Auth-Endpoint: https://mystore.com/auth/token
 
 Allow: /api/*
 Disallow: /admin/*
 
+Agent: *
 Agent: claude
   Rate-Limit: 200/minute
   Capabilities: product-search, store-assistant

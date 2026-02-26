@@ -174,9 +174,11 @@ Each capability declares a rate limit. Agent-specific limits override capability
 
 | Package | Description |
 |---------|-------------|
-| `@agents-txt/core` | Parser, generator, validator, and client |
+| `@agents-txt/core` | Parser, generator, validator, and client for agents.txt |
 | `@agents-txt/express` | Express middleware — one line to add agents.txt |
 | `@agents-txt/mcp` | MCP server wrapping any agents.txt site |
+| `@ai-txt/core` | Parser, generator, validator for ai.txt (training policy) |
+| `@ai-txt/express` | Express middleware — one line to add ai.txt |
 
 ## Specification
 
