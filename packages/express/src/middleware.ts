@@ -20,7 +20,12 @@ export interface AgentsTxtOptions {
   paths?: { txt?: string; json?: string };
 }
 
-export function agentsTxt(options: AgentsTxtOptions) {
+export type AgentsTxtMiddleware = ((req: Request, res: Response, next: NextFunction) => void) & {
+  /** Clean up the rate limiter timer. Call on server shutdown. */
+  destroy(): void;
+};
+
+export function agentsTxt(options: AgentsTxtOptions): AgentsTxtMiddleware {
   const doc: AgentsTxtDocument = {
     specVersion: "1.0",
     generatedAt: new Date().toISOString(),
@@ -36,13 +41,15 @@ export function agentsTxt(options: AgentsTxtOptions) {
   const txtPath = options.paths?.txt ?? "/.well-known/agents.txt";
   const jsonPath = options.paths?.json ?? "/.well-known/agents.json";
 
-  const rateLimiter = options.rateLimit !== false
-    ? new RateLimiter({ defaultLimit: (options.rateLimit && options.rateLimit.defaultLimit) ?? 60 })
+  const rateLimitDisabled = options.rateLimit === false
+    || (typeof options.rateLimit === "object" && options.rateLimit.enabled === false);
+  const rateLimiter = !rateLimitDisabled
+    ? new RateLimiter({ defaultLimit: (options.rateLimit && typeof options.rateLimit === "object" && options.rateLimit.defaultLimit) || 60 })
     : null;
 
   const corsOrigins = options.corsOrigins ?? ["*"];
 
-  return function agentsTxtMiddleware(req: Request, res: Response, next: NextFunction): void {
+  const middleware = function agentsTxtMiddleware(req: Request, res: Response, next: NextFunction): void {
     // Only handle our paths
     if (req.path !== txtPath && req.path !== jsonPath) {
       next();
@@ -69,6 +76,13 @@ export function agentsTxt(options: AgentsTxtOptions) {
       return;
     }
 
+    // Reject non-GET methods
+    if (req.method !== "GET") {
+      res.setHeader("Allow", "GET, OPTIONS");
+      res.status(405).end();
+      return;
+    }
+
     // Rate limiting
     if (rateLimiter) {
       const ip = req.ip ?? req.socket?.remoteAddress ?? "unknown";
@@ -91,5 +105,11 @@ export function agentsTxt(options: AgentsTxtOptions) {
       res.setHeader("Cache-Control", "public, max-age=300");
       res.send(jsonContent);
     }
+  } as AgentsTxtMiddleware;
+
+  middleware.destroy = () => {
+    rateLimiter?.destroy();
   };
+
+  return middleware;
 }

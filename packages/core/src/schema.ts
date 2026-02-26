@@ -31,7 +31,7 @@ export const ParameterDefSchema = z.object({
 
 export const CapabilitySchema = z.object({
   id: z.string().min(1).max(100).regex(/^[a-z0-9][a-z0-9-]*$/, "Must be lowercase alphanumeric with hyphens"),
-  description: z.string().min(1).max(500),
+  description: z.string().max(500).optional().default(""),
   endpoint: z.string().url(),
   method: z.string().optional(),
   protocol: ProtocolSchema,

@@ -12,12 +12,12 @@
       "endpoint": "https://example.com/api/search",
       "method": "GET",
       "protocol": "REST",
-      "auth": "none",
+      "auth": { "type": "none" },
       "rateLimit": { "requests": 60, "window": "minute" },
       "description": "Search the product catalog by keyword",
-      "params": [
-        { "name": "q", "location": "query", "type": "string", "required": true, "description": "Search query" },
-        { "name": "limit", "location": "query", "type": "integer", "description": "Max results, default 20" }
+      "parameters": [
+        { "name": "q", "in": "query", "type": "string", "required": true, "description": "Search query" },
+        { "name": "limit", "in": "query", "type": "integer", "description": "Max results, default 20" }
       ]
     },
     {
@@ -25,13 +25,13 @@
       "endpoint": "https://example.com/api/products",
       "method": "GET",
       "protocol": "REST",
-      "auth": "none",
+      "auth": { "type": "none" },
       "rateLimit": { "requests": 120, "window": "minute" },
       "description": "Browse all products with pagination",
-      "params": [
-        { "name": "page", "location": "query", "type": "integer", "description": "Page number, default 1" },
-        { "name": "limit", "location": "query", "type": "integer", "description": "Items per page, default 20" },
-        { "name": "category", "location": "query", "type": "string", "description": "Filter by category" }
+      "parameters": [
+        { "name": "page", "in": "query", "type": "integer", "description": "Page number, default 1" },
+        { "name": "limit", "in": "query", "type": "integer", "description": "Items per page, default 20" },
+        { "name": "category", "in": "query", "type": "string", "description": "Filter by category" }
       ]
     },
     {
@@ -39,7 +39,7 @@
       "endpoint": "https://example.com/api/contact",
       "method": "POST",
       "protocol": "REST",
-      "auth": "none",
+      "auth": { "type": "none" },
       "rateLimit": { "requests": 5, "window": "minute" },
       "description": "Send a message to the site owner"
     }
@@ -48,21 +48,18 @@
     "allow": ["/api/*"],
     "disallow": ["/admin/*", "/checkout/*"]
   },
-  "agents": [
-    {
-      "name": "*",
+  "agents": {
+    "*": {
       "rateLimit": { "requests": 60, "window": "minute" },
       "capabilities": ["product-search", "browse-products", "contact"]
     },
-    {
-      "name": "claude",
+    "claude": {
       "rateLimit": { "requests": 200, "window": "minute" },
       "capabilities": ["product-search", "browse-products", "contact"]
     },
-    {
-      "name": "gpt",
+    "gpt": {
       "rateLimit": { "requests": 200, "window": "minute" },
       "capabilities": ["product-search", "browse-products", "contact"]
     }
-  ]
+  }
 }

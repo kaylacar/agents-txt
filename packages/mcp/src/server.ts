@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { AgentsTxtClient } from "@agents-txt/core";
 import type { AgentsTxtDocument, Capability } from "@agents-txt/core";
+import { z } from "zod";
 
 export interface ServerOptions {
   /** Bearer token for authenticated endpoints. */
@@ -41,6 +42,8 @@ export async function createAgentsTxtServer(
   for (const cap of doc.capabilities) {
     if (cap.protocol === "REST") {
       registerRestTool(server, cap, options);
+    } else {
+      console.error(`[agents-txt-mcp] Skipping non-REST capability "${cap.id}" (protocol: ${cap.protocol})`);
     }
   }
 
@@ -74,27 +77,31 @@ function buildAuthHeaders(cap: Capability, options: ServerOptions): Record<strin
 }
 
 function registerRestTool(server: McpServer, cap: Capability, options: ServerOptions): void {
-  // Build input schema from parameters
-  const properties: Record<string, { type: string; description?: string }> = {};
-  const required: string[] = [];
+  // Build Zod input schema from parameters
+  const shape: Record<string, z.ZodTypeAny> = {};
 
   if (cap.parameters) {
     for (const param of cap.parameters) {
-      properties[param.name] = {
-        type: param.type === "integer" ? "number" : param.type,
-        description: param.description,
-      };
-      if (param.required) required.push(param.name);
+      let schema: z.ZodTypeAny;
+      switch (param.type) {
+        case "integer": schema = z.number().int(); break;
+        case "number": schema = z.number(); break;
+        case "boolean": schema = z.boolean(); break;
+        default: schema = z.string(); break;
+      }
+      if (param.description) schema = schema.describe(param.description);
+      if (!param.required) schema = schema.optional();
+      shape[param.name] = schema;
     }
   }
 
   server.tool(
     cap.id,
     cap.description,
-    properties,
+    shape,
     async (args: Record<string, unknown>) => {
       const method = (cap.method ?? "GET").toUpperCase();
-      const url = new URL(cap.endpoint);
+      let endpoint = cap.endpoint;
       const authHeaders = buildAuthHeaders(cap, options);
       const headers: Record<string, string> = {
         "Accept": "application/json",
@@ -104,12 +111,26 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
 
       let body: string | undefined;
 
+      // Substitute path parameters into URL and place header params
+      for (const [key, value] of Object.entries(args)) {
+        if (value === undefined || value === null) continue;
+        const paramDef = cap.parameters?.find((p) => p.name === key);
+        if (paramDef?.in === "path") {
+          endpoint = endpoint.replace(`{${key}}`, encodeURIComponent(String(value)));
+        } else if (paramDef?.in === "header") {
+          headers[key] = String(value);
+        }
+      }
+
+      const url = new URL(endpoint);
+
       if (method === "GET" || method === "HEAD") {
-        // GET/HEAD: all args go to query string
+        // GET/HEAD: remaining args go to query string
         for (const [key, value] of Object.entries(args)) {
-          if (value !== undefined && value !== null) {
-            url.searchParams.set(key, String(value));
-          }
+          if (value === undefined || value === null) continue;
+          const paramDef = cap.parameters?.find((p) => p.name === key);
+          if (paramDef?.in === "path" || paramDef?.in === "header") continue;
+          url.searchParams.set(key, String(value));
         }
       } else {
         // POST/PUT/PATCH/DELETE: separate query vs body params
@@ -117,6 +138,7 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
         for (const [key, value] of Object.entries(args)) {
           if (value === undefined || value === null) continue;
           const paramDef = cap.parameters?.find((p) => p.name === key);
+          if (paramDef?.in === "path" || paramDef?.in === "header") continue;
           if (paramDef?.in === "query") {
             url.searchParams.set(key, String(value));
           } else {
@@ -130,11 +152,15 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
       }
 
       try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 30_000);
         const response = await fetch(url.toString(), {
           method,
           headers,
           body,
+          signal: controller.signal,
         });
+        clearTimeout(timer);
 
         const data = await response.text();
 

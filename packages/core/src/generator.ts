@@ -11,7 +11,7 @@ export function generate(doc: AgentsTxtDocument): string {
   lines.push("# agents.txt — AI Agent Capability Declaration");
   lines.push(`# Spec-Version: ${doc.specVersion}`);
   if (doc.generatedAt) {
-    lines.push(`# Generated: ${doc.generatedAt}`);
+    lines.push(`# Generated-At: ${doc.generatedAt}`);
   }
   lines.push("");
 
@@ -31,22 +31,22 @@ export function generate(doc: AgentsTxtDocument): string {
 
   // Capabilities
   for (const cap of doc.capabilities) {
-    lines.push(`Capability: ${cap.id}`);
-    lines.push(`  Endpoint: ${cap.endpoint}`);
+    lines.push(`Capability: ${sanitizeValue(cap.id)}`);
+    lines.push(`  Endpoint: ${sanitizeValue(cap.endpoint)}`);
     if (cap.method) {
-      lines.push(`  Method: ${cap.method}`);
+      lines.push(`  Method: ${sanitizeValue(cap.method)}`);
     }
-    lines.push(`  Protocol: ${cap.protocol}`);
+    lines.push(`  Protocol: ${sanitizeValue(cap.protocol)}`);
     if (cap.auth) {
-      lines.push(`  Auth: ${cap.auth.type}`);
+      lines.push(`  Auth: ${sanitizeValue(cap.auth.type)}`);
       if (cap.auth.tokenEndpoint) {
-        lines.push(`  Auth-Endpoint: ${cap.auth.tokenEndpoint}`);
+        lines.push(`  Auth-Endpoint: ${sanitizeValue(cap.auth.tokenEndpoint)}`);
       }
       if (cap.auth.docsUrl) {
-        lines.push(`  Auth-Docs: ${cap.auth.docsUrl}`);
+        lines.push(`  Auth-Docs: ${sanitizeValue(cap.auth.docsUrl)}`);
       }
       if (cap.auth.scopes && cap.auth.scopes.length > 0) {
-        lines.push(`  Scopes: ${cap.auth.scopes.join(", ")}`);
+        lines.push(`  Scopes: ${cap.auth.scopes.map((s) => sanitizeValue(s)).join(", ")}`);
       }
     }
     if (cap.rateLimit) {
@@ -56,13 +56,13 @@ export function generate(doc: AgentsTxtDocument): string {
       lines.push(`  Description: ${sanitizeValue(cap.description)}`);
     }
     if (cap.openapi) {
-      lines.push(`  OpenAPI: ${cap.openapi}`);
+      lines.push(`  OpenAPI: ${sanitizeValue(cap.openapi)}`);
     }
     if (cap.parameters) {
       for (const param of cap.parameters) {
         const parts = [param.in, param.type];
         if (param.required) parts.push("required");
-        let line = `  Param: ${param.name} (${parts.join(", ")})`;
+        let line = `  Param: ${sanitizeValue(param.name)} (${parts.join(", ")})`;
         if (param.description) line += ` — ${sanitizeValue(param.description)}`;
         lines.push(line);
       }
@@ -72,16 +72,16 @@ export function generate(doc: AgentsTxtDocument): string {
 
   // Access control
   for (const pattern of doc.access.allow) {
-    lines.push(`Allow: ${pattern}`);
+    lines.push(`Allow: ${sanitizeValue(pattern)}`);
   }
   for (const pattern of doc.access.disallow) {
-    lines.push(`Disallow: ${pattern}`);
+    lines.push(`Disallow: ${sanitizeValue(pattern)}`);
   }
   lines.push("");
 
   // Agent policies
   for (const [agent, policy] of Object.entries(doc.agents)) {
-    lines.push(`Agent: ${agent}`);
+    lines.push(`Agent: ${sanitizeValue(agent)}`);
     if (policy.rateLimit) {
       lines.push(`  Rate-Limit: ${formatRateLimit(policy.rateLimit.requests, policy.rateLimit.window)}`);
     }

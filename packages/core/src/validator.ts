@@ -59,12 +59,12 @@ export function validate(doc: AgentsTxtDocument): ValidationResult {
     });
   }
 
-  // Endpoint URLs should be HTTPS
+  // Endpoint URLs should be HTTPS (wss:// is also secure)
   for (const cap of doc.capabilities) {
-    if (cap.endpoint && !cap.endpoint.startsWith("https://")) {
+    if (cap.endpoint && !cap.endpoint.startsWith("https://") && !cap.endpoint.startsWith("wss://")) {
       warnings.push({
         path: `capabilities.${cap.id}.endpoint`,
-        message: `Capability "${cap.id}" endpoint should use HTTPS`,
+        message: `Capability "${cap.id}" endpoint should use HTTPS (or WSS for WebSocket)`,
         code: "INSECURE_ENDPOINT",
       });
     }

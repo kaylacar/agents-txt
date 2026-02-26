@@ -8,7 +8,6 @@ import type {
   ParseWarning,
   Protocol,
   AuthType,
-  RateLimitWindow,
 } from "./types.js";
 import { parseRateLimit } from "./utils.js";
 
@@ -76,7 +75,7 @@ export function parse(input: string): ParseResult {
       // Extract spec version and generated date from comments
       const specMatch = trimmed.match(/^#\s*Spec-Version:\s*(.+)/i);
       if (specMatch) specVersion = specMatch[1].trim();
-      const genMatch = trimmed.match(/^#\s*Generated:\s*(.+)/i);
+      const genMatch = trimmed.match(/^#\s*Generated(?:-At)?:\s*(.+)/i);
       if (genMatch) generatedAt = genMatch[1].trim();
       continue;
     }
@@ -127,7 +126,7 @@ export function parse(input: string): ParseResult {
         case "Rate-Limit": {
           const rl = parseRateLimit(value);
           if (rl) {
-            currentCapability.rateLimit = { requests: rl.requests, window: rl.window as RateLimitWindow };
+            currentCapability.rateLimit = { requests: rl.requests, window: rl.window };
           } else {
             warnings.push({ line: lineNum, field: "Rate-Limit", message: `Invalid rate limit: ${value}` });
           }
@@ -161,7 +160,7 @@ export function parse(input: string): ParseResult {
         case "Rate-Limit": {
           const rl = parseRateLimit(value);
           if (rl) {
-            currentAgentPolicy.rateLimit = { requests: rl.requests, window: rl.window as RateLimitWindow };
+            currentAgentPolicy.rateLimit = { requests: rl.requests, window: rl.window };
           }
           break;
         }
@@ -189,6 +188,8 @@ export function parse(input: string): ParseResult {
     const value = trimmed.slice(colonIdx + 1).trim();
 
     switch (key) {
+      case "Spec-Version": specVersion = value; break;
+      case "Generated-At": generatedAt = value; break;
       case "Site-Name": site.name = value; break;
       case "Site-URL": site.url = value; break;
       case "Description":
