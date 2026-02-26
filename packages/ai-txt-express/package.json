@@ -46,7 +46,7 @@
     "url": "https://github.com/kaylacar/agents-txt/issues"
   },
   "dependencies": {
-    "@ai-txt/core": "^0.1.0"
+    "@ai-txt/core": "workspace:^"
   },
   "peerDependencies": {
     "express": "^4.0.0 || ^5.0.0"
