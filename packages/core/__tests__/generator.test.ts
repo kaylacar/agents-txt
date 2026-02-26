@@ -48,17 +48,18 @@ function makeDoc(overrides: Partial<AgentsTxtDocument> = {}): AgentsTxtDocument 
 }
 
 describe("generate (text format)", () => {
-  it("includes spec version in header comment", () => {
+  it("includes spec version as key-value", () => {
     const txt = generate(makeDoc());
-    expect(txt).toContain("# Spec-Version: 1.0");
+    expect(txt).toContain("Spec-Version: 1.0");
+    expect(txt).not.toContain("# Spec-Version:");
   });
 
-  it("includes site info", () => {
+  it("includes site info with spec-compliant field names", () => {
     const txt = generate(makeDoc());
     expect(txt).toContain("Site-Name: Test Store");
     expect(txt).toContain("Site-URL: https://test.example.com");
-    expect(txt).toContain("Description: A test store");
-    expect(txt).toContain("Contact: test@example.com");
+    expect(txt).toContain("Site-Description: A test store");
+    expect(txt).toContain("Site-Contact: test@example.com");
   });
 
   it("includes capability blocks with indented fields", () => {
@@ -109,7 +110,7 @@ describe("generate (text format)", () => {
     const doc = makeDoc();
     doc.site.privacyPolicy = "https://test.example.com/privacy";
     const txt = generate(doc);
-    expect(txt).toContain("Privacy-Policy: https://test.example.com/privacy");
+    expect(txt).toContain("Site-Privacy-Policy: https://test.example.com/privacy");
   });
 
   it("ends with a newline", () => {

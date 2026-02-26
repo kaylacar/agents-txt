@@ -138,11 +138,21 @@ describe("rate limiter integration", () => {
     expect(res.headers.get("x-ratelimit-remaining")).toBeDefined();
   });
 
-  it("can disable rate limiting", async () => {
+  it("can disable rate limiting with false", async () => {
     const app = createApp({
       site: { name: "T", url: "https://t.com" },
       capabilities: [],
       rateLimit: false,
+    });
+    const res = await request(app, "/.well-known/agents.txt");
+    expect(res.headers.get("x-ratelimit-remaining")).toBeNull();
+  });
+
+  it("can disable rate limiting with enabled: false", async () => {
+    const app = createApp({
+      site: { name: "T", url: "https://t.com" },
+      capabilities: [],
+      rateLimit: { enabled: false },
     });
     const res = await request(app, "/.well-known/agents.txt");
     expect(res.headers.get("x-ratelimit-remaining")).toBeNull();

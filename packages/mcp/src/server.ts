@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import { AgentsTxtClient } from "@agents-txt/core";
 import type { AgentsTxtDocument, Capability } from "@agents-txt/core";
 
@@ -75,23 +76,23 @@ function buildAuthHeaders(cap: Capability, options: ServerOptions): Record<strin
 
 function registerRestTool(server: McpServer, cap: Capability, options: ServerOptions): void {
   // Build input schema from parameters
-  const properties: Record<string, { type: string; description?: string }> = {};
-  const required: string[] = [];
+  const shape: Record<string, z.ZodTypeAny> = {};
 
   if (cap.parameters) {
     for (const param of cap.parameters) {
-      properties[param.name] = {
-        type: param.type === "integer" ? "number" : param.type,
-        description: param.description,
-      };
-      if (param.required) required.push(param.name);
+      let field: z.ZodTypeAny = param.type === "integer" || param.type === "number"
+        ? z.number()
+        : z.string();
+      if (param.description) field = field.describe(param.description);
+      if (!param.required) field = field.optional();
+      shape[param.name] = field;
     }
   }
 
   server.tool(
     cap.id,
     cap.description,
-    properties,
+    shape,
     async (args: Record<string, unknown>) => {
       const method = (cap.method ?? "GET").toUpperCase();
       const url = new URL(cap.endpoint);
@@ -130,16 +131,22 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
       }
 
       try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 30_000);
+
         const response = await fetch(url.toString(), {
           method,
           headers,
           body,
+          signal: controller.signal,
         });
 
         const data = await response.text();
+        clearTimeout(timer);
 
         if (!response.ok) {
           return {
+            isError: true,
             content: [{
               type: "text" as const,
               text: `Error: HTTP ${response.status} ${response.statusText}\n${data}`,
@@ -152,6 +159,7 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
         };
       } catch (err) {
         return {
+          isError: true,
           content: [{
             type: "text" as const,
             text: `Error calling ${cap.endpoint}: ${err instanceof Error ? err.message : "Unknown error"}`,

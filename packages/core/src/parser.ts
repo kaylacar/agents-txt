@@ -76,7 +76,7 @@ export function parse(input: string): ParseResult {
       // Extract spec version and generated date from comments
       const specMatch = trimmed.match(/^#\s*Spec-Version:\s*(.+)/i);
       if (specMatch) specVersion = specMatch[1].trim();
-      const genMatch = trimmed.match(/^#\s*Generated:\s*(.+)/i);
+      const genMatch = trimmed.match(/^#\s*Generated(?:-At)?:\s*(.+)/i);
       if (genMatch) generatedAt = genMatch[1].trim();
       continue;
     }
@@ -153,7 +153,10 @@ export function parse(input: string): ParseResult {
 
     if (isIndented && state === "IN_AGENT" && currentAgentPolicy) {
       const colonIdx = trimmed.indexOf(":");
-      if (colonIdx === -1) continue;
+      if (colonIdx === -1) {
+        warnings.push({ line: lineNum, message: `Unparseable indented line: "${trimmed}"` });
+        continue;
+      }
       const key = trimmed.slice(0, colonIdx).trim();
       const value = trimmed.slice(colonIdx + 1).trim();
 
@@ -199,6 +202,8 @@ export function parse(input: string): ParseResult {
       case "Site-Privacy-Policy": site.privacyPolicy = value; break;
       case "Allow": allowPaths.push(value); break;
       case "Disallow": disallowPaths.push(value); break;
+      case "Spec-Version": specVersion = value; break;
+      case "Generated-At": generatedAt = value; break;
       case "Agents-JSON": metadata["Agents-JSON"] = value; break;
       case "Capability":
         currentCapability = { id: value };

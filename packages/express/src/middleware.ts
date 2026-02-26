@@ -36,8 +36,9 @@ export function agentsTxt(options: AgentsTxtOptions) {
   const txtPath = options.paths?.txt ?? "/.well-known/agents.txt";
   const jsonPath = options.paths?.json ?? "/.well-known/agents.json";
 
-  const rateLimiter = options.rateLimit !== false
-    ? new RateLimiter({ defaultLimit: (options.rateLimit && options.rateLimit.defaultLimit) ?? 60 })
+  const rlOpt = options.rateLimit;
+  const rateLimiter = rlOpt !== false && rlOpt?.enabled !== false
+    ? new RateLimiter({ defaultLimit: (rlOpt && rlOpt.defaultLimit) ?? 60 })
     : null;
 
   const corsOrigins = options.corsOrigins ?? ["*"];
@@ -57,6 +58,7 @@ export function agentsTxt(options: AgentsTxtOptions) {
       res.setHeader("Access-Control-Allow-Origin", origin);
     }
     res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Accept, User-Agent");
     res.setHeader("Vary", "Origin");
 
     // Security headers

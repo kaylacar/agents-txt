@@ -9,9 +9,9 @@ export function generate(doc: AgentsTxtDocument): string {
 
   // Header
   lines.push("# agents.txt — AI Agent Capability Declaration");
-  lines.push(`# Spec-Version: ${doc.specVersion}`);
+  lines.push(`Spec-Version: ${doc.specVersion}`);
   if (doc.generatedAt) {
-    lines.push(`# Generated: ${doc.generatedAt}`);
+    lines.push(`Generated-At: ${doc.generatedAt}`);
   }
   lines.push("");
 
@@ -19,13 +19,13 @@ export function generate(doc: AgentsTxtDocument): string {
   lines.push(`Site-Name: ${sanitizeValue(doc.site.name)}`);
   lines.push(`Site-URL: ${sanitizeValue(doc.site.url)}`);
   if (doc.site.description) {
-    lines.push(`Description: ${sanitizeValue(doc.site.description)}`);
+    lines.push(`Site-Description: ${sanitizeValue(doc.site.description)}`);
   }
   if (doc.site.contact) {
-    lines.push(`Contact: ${sanitizeValue(doc.site.contact)}`);
+    lines.push(`Site-Contact: ${sanitizeValue(doc.site.contact)}`);
   }
   if (doc.site.privacyPolicy) {
-    lines.push(`Privacy-Policy: ${sanitizeValue(doc.site.privacyPolicy)}`);
+    lines.push(`Site-Privacy-Policy: ${sanitizeValue(doc.site.privacyPolicy)}`);
   }
   lines.push("");
 
