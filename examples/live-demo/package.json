@@ -10,8 +10,8 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@agents-txt/express": "0.1.0",
-    "@ai-txt/express": "0.1.0",
+    "@agents-txt/express": "workspace:*",
+    "@ai-txt/express": "workspace:*",
     "express": "^5.1.0"
   }
 }
