@@ -27,6 +27,56 @@ importers:
         specifier: ^5.1.0
         version: 5.2.1
 
+  examples/live-demo:
+    dependencies:
+      '@agents-txt/express':
+        specifier: 0.1.0
+        version: 0.1.0(express@5.2.1)
+      '@ai-txt/express':
+        specifier: 0.1.0
+        version: 0.1.0(express@5.2.1)
+      express:
+        specifier: ^5.1.0
+        version: 5.2.1
+
+  packages/ai-txt-core:
+    dependencies:
+      zod:
+        specifier: ^3.0.0
+        version: 3.25.76
+    devDependencies:
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.6)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.0
+        version: 4.0.18(@types/node@25.3.0)
+
+  packages/ai-txt-express:
+    dependencies:
+      '@ai-txt/core':
+        specifier: ^0.1.0
+        version: 0.1.0
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.6
+      express:
+        specifier: ^5.1.0
+        version: 5.2.1
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.1(postcss@8.5.6)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+      vitest:
+        specifier: ^4.0.0
+        version: 4.0.18(@types/node@25.3.0)
+
   packages/core:
     dependencies:
       zod:
@@ -46,8 +96,8 @@ importers:
   packages/express:
     dependencies:
       '@agents-txt/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.0
     devDependencies:
       '@types/express':
         specifier: ^5.0.0
@@ -68,8 +118,8 @@ importers:
   packages/mcp:
     dependencies:
       '@agents-txt/core':
-        specifier: workspace:*
-        version: link:../core
+        specifier: ^0.1.0
+        version: 0.1.0
       '@modelcontextprotocol/sdk':
         specifier: ^1.0.0
         version: 1.26.0(zod@3.25.76)
@@ -94,6 +144,29 @@ importers:
         version: 4.0.18(@types/node@22.19.11)
 
 packages:
+
+  '@agents-txt/core@0.1.0':
+    resolution: {integrity: sha512-+/N0CC7G9UBjbgNmHxDynGa4GAwEzQmCUDflMxLrqnZlXl0LLlhWJFPWdVSyzkGg7hN1XIJxDO72domsUVwgYA==}
+
+  '@agents-txt/express@0.1.0':
+    resolution: {integrity: sha512-50hEf0P3dOoZiYtL4iRxFsIsVw51R6qDBYAFtTLzCLtA0XZKSmhne9dyEiy/E2y+sSziHh5roKNOs1YEE5t0Ww==}
+    peerDependencies:
+      express: ^4.0.0 || ^5.0.0
+    peerDependenciesMeta:
+      express:
+        optional: true
+
+  '@ai-txt/core@0.1.0':
+    resolution: {integrity: sha512-yor53cPKiSXnG7W+RuLjuUWXReCk55VM9pR4tvT6+Kaen9M003tKsCAfYhG26TT3gwuakbPfIHCphKp3r2aR3g==}
+    hasBin: true
+
+  '@ai-txt/express@0.1.0':
+    resolution: {integrity: sha512-2tVgiEJ/EFaLybTVCZWfs/Ge77QquWWvHSQtMUF8gt5NPYnToNfxrRtH6HFR8E6tlpX6X5ywUjDDNpcF+JuSTw==}
+    peerDependencies:
+      express: ^4.0.0 || ^5.0.0
+    peerDependenciesMeta:
+      express:
+        optional: true
 
   '@esbuild/aix-ppc64@0.27.3':
     resolution: {integrity: sha512-9fJMTNFTWZMh5qwrBItuziu834eOCUcEqymSH7pY+zoMVEZg3gcPuBNxH1EvfVYe9h0x/Ptw8KBzv7qxb7l8dg==}
@@ -1167,6 +1240,26 @@ packages:
 
 snapshots:
 
+  '@agents-txt/core@0.1.0':
+    dependencies:
+      zod: 3.25.76
+
+  '@agents-txt/express@0.1.0(express@5.2.1)':
+    dependencies:
+      '@agents-txt/core': 0.1.0
+    optionalDependencies:
+      express: 5.2.1
+
+  '@ai-txt/core@0.1.0':
+    dependencies:
+      zod: 3.25.76
+
+  '@ai-txt/express@0.1.0(express@5.2.1)':
+    dependencies:
+      '@ai-txt/core': 0.1.0
+    optionalDependencies:
+      express: 5.2.1
+
   '@esbuild/aix-ppc64@0.27.3':
     optional: true
 
@@ -1425,6 +1518,14 @@ snapshots:
       '@vitest/utils': 4.0.18
       chai: 6.2.2
       tinyrainbow: 3.0.3
+
+  '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@22.19.11))':
+    dependencies:
+      '@vitest/spy': 4.0.18
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      vite: 7.3.1(@types/node@22.19.11)
 
   '@vitest/mocker@4.0.18(vite@7.3.1(@types/node@25.3.0))':
     dependencies:
@@ -2083,7 +2184,7 @@ snapshots:
   vitest@4.0.18(@types/node@22.19.11):
     dependencies:
       '@vitest/expect': 4.0.18
-      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@25.3.0))
+      '@vitest/mocker': 4.0.18(vite@7.3.1(@types/node@22.19.11))
       '@vitest/pretty-format': 4.0.18
       '@vitest/runner': 4.0.18
       '@vitest/snapshot': 4.0.18

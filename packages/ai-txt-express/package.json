@@ -1,0 +1,65 @@
+{
+  "name": "@ai-txt/express",
+  "version": "0.1.0",
+  "description": "Express middleware for serving ai.txt — one line to declare your AI policy",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "ai.txt",
+    "ai-txt",
+    "ai-policy",
+    "training-policy",
+    "licensing",
+    "attribution",
+    "express",
+    "middleware",
+    "well-known",
+    "web-standard",
+    "agents-txt",
+    "anthropic",
+    "claude",
+    "openai"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kaylacar/agents-txt.git",
+    "directory": "packages/ai-txt-express"
+  },
+  "homepage": "https://github.com/kaylacar/agents-txt",
+  "bugs": {
+    "url": "https://github.com/kaylacar/agents-txt/issues"
+  },
+  "dependencies": {
+    "@ai-txt/core": "^0.1.0"
+  },
+  "peerDependencies": {
+    "express": "^4.0.0 || ^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "express": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "express": "^5.1.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.0"
+  },
+  "license": "MIT"
+}
