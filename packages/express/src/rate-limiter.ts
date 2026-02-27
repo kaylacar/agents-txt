@@ -32,6 +32,7 @@ export class RateLimiter {
         if (entry.timestamps.length === 0) this.windows.delete(key);
       }
     }, options.cleanupIntervalMs ?? 60_000);
+    this.cleanupTimer.unref();
   }
 
   check(key: string, limit?: number): { allowed: boolean; remaining: number; retryAfterMs?: number } {

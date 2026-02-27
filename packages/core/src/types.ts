@@ -60,8 +60,6 @@ export interface Capability {
   openapi?: string;
   /** Parameter definitions for REST endpoints. */
   parameters?: ParameterDef[];
-  /** Required OAuth2 scopes. */
-  scopes?: string[];
 }
 
 export type Protocol = "REST" | "MCP" | "A2A" | "GraphQL" | "WebSocket";

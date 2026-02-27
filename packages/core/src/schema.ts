@@ -39,7 +39,6 @@ export const CapabilitySchema = z.object({
   rateLimit: RateLimitSchema.optional(),
   openapi: z.string().url().optional(),
   parameters: z.array(ParameterDefSchema).optional(),
-  scopes: z.array(z.string()).optional(),
 });
 
 export const SiteInfoSchema = z.object({

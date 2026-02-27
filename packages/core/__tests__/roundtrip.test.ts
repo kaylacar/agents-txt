@@ -7,11 +7,13 @@ import type { AgentsTxtDocument } from "../src/types.js";
 
 const testDoc: AgentsTxtDocument = {
   specVersion: "1.0",
+  generatedAt: "2026-01-15T12:00:00.000Z",
   site: {
     name: "Roundtrip Store",
     url: "https://roundtrip.example.com",
     description: "Testing roundtrip",
     contact: "test@roundtrip.com",
+    privacyPolicy: "https://roundtrip.example.com/privacy",
   },
   capabilities: [
     {
@@ -53,6 +55,17 @@ describe("roundtrip: generate -> parse", () => {
     expect(result.document?.site.url).toBe(testDoc.site.url);
     expect(result.document?.site.description).toBe(testDoc.site.description);
     expect(result.document?.site.contact).toBe(testDoc.site.contact);
+    expect(result.document?.site.privacyPolicy).toBe(testDoc.site.privacyPolicy);
+  });
+
+  it("text roundtrip preserves generatedAt and specVersion", () => {
+    const text = generate(testDoc);
+    expect(text).toContain("Spec-Version: 1.0");
+    expect(text).toContain("Generated-At: 2026-01-15T12:00:00.000Z");
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.specVersion).toBe("1.0");
+    expect(result.document?.generatedAt).toBe("2026-01-15T12:00:00.000Z");
   });
 
   it("text roundtrip preserves capabilities", () => {

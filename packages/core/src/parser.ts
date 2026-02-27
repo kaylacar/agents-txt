@@ -52,7 +52,6 @@ export function parse(input: string): ParseResult {
         rateLimit: currentCapability.rateLimit,
         openapi: currentCapability.openapi,
         parameters: currentCapability.parameters,
-        scopes: currentCapability.scopes,
       });
     }
     currentCapability = null;
