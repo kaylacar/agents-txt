@@ -31,8 +31,8 @@ export function parse(input: string): ParseResult {
   const capabilities: Capability[] = [];
   const allowPaths: string[] = [];
   const disallowPaths: string[] = [];
-  const agents: Record<string, AgentPolicy> = {};
-  const metadata: Record<string, string> = {};
+  const agents: Record<string, AgentPolicy> = Object.create(null);
+  const metadata: Record<string, string> = Object.create(null);
 
   let state: ParserState = "TOP_LEVEL";
   let currentCapability: Partial<Capability> | null = null;

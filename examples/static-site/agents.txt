@@ -1,5 +1,5 @@
 # agents.txt — AI Agent Capability Declaration
-Spec-Version: 1.0
+# Spec-Version: 1.0
 
 Site-Name: My Store
 Site-URL: https://example.com

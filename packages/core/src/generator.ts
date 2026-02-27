@@ -60,7 +60,7 @@ export function generate(doc: AgentsTxtDocument): string {
     }
     if (cap.parameters) {
       for (const param of cap.parameters) {
-        const parts = [param.in, param.type];
+        const parts = [param.in, sanitizeValue(param.type, 50)];
         if (param.required) parts.push("required");
         let line = `  Param: ${sanitizeValue(param.name)} (${parts.join(", ")})`;
         if (param.description) line += ` — ${sanitizeValue(param.description)}`;

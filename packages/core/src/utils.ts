@@ -8,7 +8,7 @@ export function sanitizeValue(value: unknown, maxLength = 500): string {
   const str = typeof value === "string" ? value : String(value ?? "");
   return str
     .replace(/[\r\n]/g, " ")
-    .replace(/[\x00-\x1f]/g, "")
+    .replace(/[\x00-\x1f\x7f]/g, "")
     .trim()
     .slice(0, maxLength);
 }

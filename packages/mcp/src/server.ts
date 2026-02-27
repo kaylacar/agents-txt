@@ -76,6 +76,12 @@ function buildAuthHeaders(cap: Capability, options: ServerOptions): Record<strin
   return headers;
 }
 
+const ALLOWED_SCHEMES = new Set(["http:", "https:"]);
+const BLOCKED_HEADERS = new Set([
+  "host", "authorization", "cookie", "set-cookie",
+  "proxy-authorization", "x-forwarded-for", "x-forwarded-host",
+]);
+
 function registerRestTool(server: McpServer, cap: Capability, options: ServerOptions): void {
   // Build Zod input schema from parameters
   const shape: Record<string, z.ZodTypeAny> = {};
@@ -118,11 +124,24 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
         if (paramDef?.in === "path") {
           endpoint = endpoint.replace(`{${key}}`, encodeURIComponent(String(value)));
         } else if (paramDef?.in === "header") {
-          headers[key] = String(value);
+          // Block sensitive headers to prevent injection
+          if (!BLOCKED_HEADERS.has(key.toLowerCase())) {
+            headers[key] = String(value);
+          }
         }
       }
 
       const url = new URL(endpoint);
+
+      // SSRF protection: only allow http(s) schemes
+      if (!ALLOWED_SCHEMES.has(url.protocol)) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `Error: Unsupported URL scheme "${url.protocol}" for capability "${cap.id}"`,
+          }],
+        };
+      }
 
       if (method === "GET" || method === "HEAD") {
         // GET/HEAD: remaining args go to query string
