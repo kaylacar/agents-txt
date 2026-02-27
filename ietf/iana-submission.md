@@ -12,7 +12,7 @@ Submit the following registrations (one per form submission).
 
 **URI suffix:** agents.txt
 
-**Change controller:** Kayla Car <YOUR_EMAIL_HERE>
+**Change controller:** Kayla Car <kayla@agents-txt.dev>
 
 **Specification document(s):**
 https://github.com/kaylacar/agents-txt/blob/master/SPEC.md
@@ -31,7 +31,7 @@ explicitly permitted capabilities.
 
 **URI suffix:** agents.json
 
-**Change controller:** Kayla Car <YOUR_EMAIL_HERE>
+**Change controller:** Kayla Car <kayla@agents-txt.dev>
 
 **Specification document(s):**
 https://github.com/kaylacar/agents-txt/blob/master/SPEC.md

@@ -38,10 +38,14 @@ export async function createAgentsTxtServer(
     version: "0.1.0",
   });
 
-  // Register a tool for each REST capability
+  // Register a tool for each REST capability; warn about skipped protocols
   for (const cap of doc.capabilities) {
     if (cap.protocol === "REST") {
       registerRestTool(server, cap, options);
+    } else {
+      console.warn(
+        `agents-txt-mcp: skipping capability "${cap.id}" (protocol "${cap.protocol}" is not supported — only REST capabilities are bridged to MCP tools)`,
+      );
     }
   }
 

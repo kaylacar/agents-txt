@@ -26,7 +26,7 @@ author:
   - ins: K. Car
     name: Kayla Car
     organization: Independent
-    email: YOUR_EMAIL_HERE
+    email: kayla@agents-txt.dev
 
 normative:
   RFC2119:

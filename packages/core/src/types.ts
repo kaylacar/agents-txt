@@ -138,12 +138,14 @@ export interface ParseError {
   line?: number;
   field?: string;
   message: string;
+  code?: string;
 }
 
 export interface ParseWarning {
   line?: number;
   field?: string;
   message: string;
+  code?: string;
 }
 
 export interface ValidationResult {

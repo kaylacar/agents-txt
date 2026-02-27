@@ -134,4 +134,15 @@ describe("generateJSON", () => {
     expect(parsed.access.allow).toContain("/api/*");
     expect(parsed.agents.claude.rateLimit.requests).toBe(200);
   });
+
+  it("throws on invalid document", () => {
+    const badDoc = {
+      specVersion: "1.0",
+      site: { name: "", url: "not-a-url" },
+      capabilities: [],
+      access: { allow: [], disallow: [] },
+      agents: {},
+    } as AgentsTxtDocument;
+    expect(() => generateJSON(badDoc)).toThrow(/Invalid document/);
+  });
 });

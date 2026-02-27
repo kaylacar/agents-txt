@@ -205,4 +205,61 @@ Capability: search
     expect(result.success).toBe(true);
     expect(result.warnings.some((w) => w.message.includes("Invalid parameter"))).toBe(true);
   });
+
+  it("parses hyphenated parameter names and types", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: search
+  Endpoint: https://test.com/api/search
+  Protocol: REST
+  Param: content-type (header, string, required) — Content type header
+  Param: start-date (query, date-time) — Start date filter
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    const params = result.document!.capabilities[0].parameters!;
+    expect(params).toHaveLength(2);
+    expect(params[0].name).toBe("content-type");
+    expect(params[0].in).toBe("header");
+    expect(params[0].required).toBe(true);
+    expect(params[0].description).toBe("Content type header");
+    expect(params[1].name).toBe("start-date");
+    expect(params[1].type).toBe("date-time");
+    expect(params[1].required).toBe(false);
+  });
+
+  it("parses Param with double-hyphen description separator", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: search
+  Endpoint: https://test.com/api/search
+  Protocol: REST
+  Param: q (query, string, required) -- Search query
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    const params = result.document!.capabilities[0].parameters!;
+    expect(params[0].description).toBe("Search query");
+  });
+
+  it("includes error codes on required field errors", () => {
+    const result = parse("");
+    expect(result.success).toBe(false);
+    expect(result.errors.some((e) => e.code === "MISSING_REQUIRED_FIELD")).toBe(true);
+  });
+
+  it("includes warning codes on unknown fields", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+Bogus-Field: something
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.code === "UNKNOWN_FIELD")).toBe(true);
+  });
 });

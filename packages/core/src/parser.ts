@@ -81,7 +81,7 @@ export function parse(input: string): ParseResult {
     if (isIndented && state === "IN_CAPABILITY" && currentCapability) {
       const colonIdx = trimmed.indexOf(":");
       if (colonIdx === -1) {
-        warnings.push({ line: lineNum, message: `Unparseable indented line: "${trimmed}"` });
+        warnings.push({ line: lineNum, message: `Unparseable indented line: "${trimmed}"`, code: "UNPARSEABLE_LINE" });
         continue;
       }
       const key = trimmed.slice(0, colonIdx).trim();
@@ -94,7 +94,7 @@ export function parse(input: string): ParseResult {
           if (VALID_PROTOCOLS.has(value)) {
             currentCapability.protocol = value as Protocol;
           } else {
-            warnings.push({ line: lineNum, field: "Protocol", message: `Unknown protocol: ${value}` });
+            warnings.push({ line: lineNum, field: "Protocol", message: `Unknown protocol: ${value}`, code: "UNKNOWN_PROTOCOL" });
             currentCapability.protocol = value as Protocol;
           }
           break;
@@ -103,7 +103,7 @@ export function parse(input: string): ParseResult {
           if (VALID_AUTH_TYPES.has(value)) {
             currentCapability.auth.type = value as AuthType;
           } else {
-            warnings.push({ line: lineNum, field: "Auth", message: `Unknown auth type: ${value}` });
+            warnings.push({ line: lineNum, field: "Auth", message: `Unknown auth type: ${value}`, code: "UNKNOWN_AUTH_TYPE" });
           }
           break;
         case "Auth-Endpoint":
@@ -123,7 +123,7 @@ export function parse(input: string): ParseResult {
           if (rl) {
             currentCapability.rateLimit = { requests: rl.requests, window: rl.window as RateLimitWindow };
           } else {
-            warnings.push({ line: lineNum, field: "Rate-Limit", message: `Invalid rate limit: ${value}` });
+            warnings.push({ line: lineNum, field: "Rate-Limit", message: `Invalid rate limit: ${value}`, code: "INVALID_RATE_LIMIT" });
           }
           break;
         }
@@ -135,12 +135,12 @@ export function parse(input: string): ParseResult {
             if (!currentCapability.parameters) currentCapability.parameters = [];
             currentCapability.parameters.push(parsed);
           } else {
-            warnings.push({ line: lineNum, field: "Param", message: `Invalid parameter: ${value}` });
+            warnings.push({ line: lineNum, field: "Param", message: `Invalid parameter: ${value}`, code: "INVALID_PARAMETER" });
           }
           break;
         }
         default:
-          warnings.push({ line: lineNum, message: `Unknown capability field: ${key}` });
+          warnings.push({ line: lineNum, message: `Unknown capability field: ${key}`, code: "UNKNOWN_FIELD" });
       }
       continue;
     }
@@ -148,7 +148,7 @@ export function parse(input: string): ParseResult {
     if (isIndented && state === "IN_AGENT" && currentAgentPolicy) {
       const colonIdx = trimmed.indexOf(":");
       if (colonIdx === -1) {
-        warnings.push({ line: lineNum, message: `Unparseable indented line: "${trimmed}"` });
+        warnings.push({ line: lineNum, message: `Unparseable indented line: "${trimmed}"`, code: "UNPARSEABLE_LINE" });
         continue;
       }
       const key = trimmed.slice(0, colonIdx).trim();
@@ -159,6 +159,8 @@ export function parse(input: string): ParseResult {
           const rl = parseRateLimit(value);
           if (rl) {
             currentAgentPolicy.rateLimit = { requests: rl.requests, window: rl.window as RateLimitWindow };
+          } else {
+            warnings.push({ line: lineNum, field: "Rate-Limit", message: `Invalid rate limit: ${value}`, code: "INVALID_RATE_LIMIT" });
           }
           break;
         }
@@ -166,7 +168,7 @@ export function parse(input: string): ParseResult {
           currentAgentPolicy.capabilities = value.split(",").map((s) => s.trim());
           break;
         default:
-          warnings.push({ line: lineNum, message: `Unknown agent field: ${key}` });
+          warnings.push({ line: lineNum, message: `Unknown agent field: ${key}`, code: "UNKNOWN_FIELD" });
       }
       continue;
     }
@@ -178,7 +180,7 @@ export function parse(input: string): ParseResult {
     // Parse top-level key: value
     const colonIdx = trimmed.indexOf(":");
     if (colonIdx === -1) {
-      warnings.push({ line: lineNum, message: `Unparseable line: "${trimmed}"` });
+      warnings.push({ line: lineNum, message: `Unparseable line: "${trimmed}"`, code: "UNPARSEABLE_LINE" });
       continue;
     }
 
@@ -210,7 +212,7 @@ export function parse(input: string): ParseResult {
         break;
       default:
         // Store as metadata but warn — could be a typo
-        warnings.push({ line: lineNum, message: `Unknown top-level field "${key}", treating as metadata` });
+        warnings.push({ line: lineNum, message: `Unknown top-level field "${key}", treating as metadata`, code: "UNKNOWN_FIELD" });
         metadata[key] = value;
     }
   }
@@ -220,15 +222,15 @@ export function parse(input: string): ParseResult {
   if (state === "IN_AGENT") flushAgent();
 
   // Validate required fields
-  if (!site.name) errors.push({ field: "Site-Name", message: "Site-Name is required" });
-  if (!site.url) errors.push({ field: "Site-URL", message: "Site-URL is required" });
+  if (!site.name) errors.push({ field: "Site-Name", message: "Site-Name is required", code: "MISSING_REQUIRED_FIELD" });
+  if (!site.url) errors.push({ field: "Site-URL", message: "Site-URL is required", code: "MISSING_REQUIRED_FIELD" });
 
   if (errors.length > 0) {
     return { success: false, errors, warnings };
   }
 
   if (allowPaths.length === 0) {
-    warnings.push({ message: "No access rules specified, defaulting to Allow: *" });
+    warnings.push({ message: "No access rules specified, defaulting to Allow: *", code: "NO_ACCESS_RULES" });
   }
 
   const document: AgentsTxtDocument = {
@@ -258,8 +260,10 @@ export function parse(input: string): ParseResult {
  */
 function parseParam(value: string): ParameterDef | null {
   // Format: name (location, type[, required]) [— description]
+  // Allow hyphens in name and type (e.g. content-type, date-time)
+  // Accept both em dash (—) and double hyphen (--) as description separator
   const match = value.match(
-    /^(\w+)\s*\(\s*(\w+)\s*,\s*(\w+)(?:\s*,\s*(required))?\s*\)(?:\s*—\s*(.+))?$/,
+    /^([\w-]+)\s*\(\s*([\w-]+)\s*,\s*([\w-]+)(?:\s*,\s*(required))?\s*\)(?:\s*(?:—|--)\s*(.+))?$/,
   );
   if (!match) return null;
 
