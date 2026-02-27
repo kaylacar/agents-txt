@@ -4,9 +4,11 @@
  */
 export function sanitizeValue(value: unknown, maxLength = 500): string {
   const str = typeof value === "string" ? value : String(value ?? "");
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: intentional — stripping control chars from user input
+  const CONTROL_CHARS = /[\x00-\x1f]/g;
   return str
     .replace(/[\r\n]/g, " ")
-    .replace(/[\x00-\x1f]/g, "")
+    .replace(CONTROL_CHARS, "")
     .trim()
     .slice(0, maxLength);
 }

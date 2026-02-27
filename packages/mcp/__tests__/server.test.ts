@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import express from "express";
+import type { Server } from "node:http";
 import { agentsTxt } from "@agents-txt/express";
+import express from "express";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createAgentsTxtServer } from "../src/server.js";
-import type { Server } from "http";
 
 let app: ReturnType<typeof express>;
 let server: Server;
@@ -102,9 +102,7 @@ describe("createAgentsTxtServer", () => {
   });
 
   it("throws on unreachable URL", async () => {
-    await expect(
-      createAgentsTxtServer("http://127.0.0.1:1"),
-    ).rejects.toThrow(/Failed to discover/);
+    await expect(createAgentsTxtServer("http://127.0.0.1:1")).rejects.toThrow(/Failed to discover/);
   });
 
   it("throws on URL with no agents.txt", async () => {
@@ -115,9 +113,7 @@ describe("createAgentsTxtServer", () => {
     const barePort = (bareServer.address() as { port: number }).port;
 
     try {
-      await expect(
-        createAgentsTxtServer(`http://127.0.0.1:${barePort}`),
-      ).rejects.toThrow(/Failed to discover/);
+      await expect(createAgentsTxtServer(`http://127.0.0.1:${barePort}`)).rejects.toThrow(/Failed to discover/);
     } finally {
       bareServer.close();
     }

@@ -1,5 +1,5 @@
 import type { AgentsTxtDocument } from "./types.js";
-import { sanitizeValue, formatRateLimit } from "./utils.js";
+import { formatRateLimit, sanitizeValue } from "./utils.js";
 
 /**
  * Generate agents.txt text format from a document object.
@@ -98,5 +98,5 @@ export function generate(doc: AgentsTxtDocument): string {
     }
   }
 
-  return lines.join("\n") + "\n";
+  return `${lines.join("\n")}\n`;
 }

@@ -1,5 +1,5 @@
-import { describe, it, expect, afterAll } from "vitest";
 import express from "express";
+import { describe, expect, it } from "vitest";
 import { agentsTxt } from "../src/index.js";
 
 function createApp(options?: Parameters<typeof agentsTxt>[0]) {

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { generate } from "../src/generator.js";
 import { generateJSON } from "../src/generator-json.js";
 import type { AgentsTxtDocument } from "../src/types.js";
@@ -116,6 +116,64 @@ describe("generate (text format)", () => {
     const txt = generate(makeDoc());
     expect(txt.endsWith("\n")).toBe(true);
   });
+
+  it("generates parameters with all fields", () => {
+    const doc = makeDoc();
+    doc.capabilities[0].parameters = [
+      { name: "q", in: "query", type: "string", required: true, description: "Search query" },
+      { name: "limit", in: "query", type: "integer" },
+    ];
+    const txt = generate(doc);
+    expect(txt).toContain("  Param: q (query, string, required) — Search query");
+    expect(txt).toContain("  Param: limit (query, integer)");
+  });
+
+  it("generates document with empty capabilities list", () => {
+    const doc = makeDoc({ capabilities: [] });
+    const txt = generate(doc);
+    expect(txt).toContain("Site-Name: Test Store");
+    expect(txt).not.toContain("Capability:");
+  });
+
+  it("generates metadata fields", () => {
+    const doc = makeDoc({ metadata: { "Agents-JSON": "https://example.com/agents.json" } });
+    const txt = generate(doc);
+    expect(txt).toContain("Agents-JSON: https://example.com/agents.json");
+  });
+
+  it("omits generatedAt when not set", () => {
+    const doc = makeDoc();
+    delete doc.generatedAt;
+    const txt = generate(doc);
+    expect(txt).not.toContain("Generated:");
+  });
+
+  it("includes Auth-Docs when present", () => {
+    const doc = makeDoc();
+    doc.capabilities[0].auth = {
+      type: "oauth2",
+      docsUrl: "https://test.example.com/docs/auth",
+    };
+    const txt = generate(doc);
+    expect(txt).toContain("  Auth-Docs: https://test.example.com/docs/auth");
+  });
+
+  it("includes OpenAPI field when present", () => {
+    const doc = makeDoc();
+    doc.capabilities[0].openapi = "https://test.example.com/openapi.json";
+    const txt = generate(doc);
+    expect(txt).toContain("  OpenAPI: https://test.example.com/openapi.json");
+  });
+
+  it("handles agent with no policy fields", () => {
+    const doc = makeDoc({ agents: { "*": {} } });
+    const txt = generate(doc);
+    expect(txt).toContain("Agent: *");
+    const agentLine = txt.indexOf("Agent: *");
+    const nextLine = txt.indexOf("\n", agentLine) + 1;
+    const lineAfter = txt.slice(nextLine, txt.indexOf("\n", nextLine));
+    expect(lineAfter.startsWith("  ")).toBe(false);
+  });
 });
 
 describe("generateJSON", () => {
@@ -132,5 +190,10 @@ describe("generateJSON", () => {
     expect(parsed.capabilities).toHaveLength(2);
     expect(parsed.access.allow).toContain("/api/*");
     expect(parsed.agents.claude.rateLimit.requests).toBe(200);
+  });
+
+  it("produces pretty-printed JSON", () => {
+    const json = generateJSON(makeDoc());
+    expect(json).toContain("\n");
   });
 });

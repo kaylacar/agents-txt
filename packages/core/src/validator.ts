@@ -1,7 +1,7 @@
-import type { AgentsTxtDocument, ValidationResult, ValidationError, ValidationWarning } from "./types.js";
-import { AgentsTxtDocumentSchema } from "./schema.js";
 import { parse } from "./parser.js";
 import { parseJSON } from "./parser-json.js";
+import { AgentsTxtDocumentSchema } from "./schema.js";
+import type { AgentsTxtDocument, ValidationError, ValidationResult, ValidationWarning } from "./types.js";
 
 /**
  * Validate an AgentsTxtDocument object against the spec.

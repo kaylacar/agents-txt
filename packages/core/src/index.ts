@@ -1,48 +1,45 @@
 // Parser
-export { parse } from "./parser.js";
-export { parseJSON } from "./parser-json.js";
+
+export type { ClientOptions } from "./client.js";
+// Client
+export { AgentsTxtClient } from "./client.js";
 
 // Generator
 export { generate } from "./generator.js";
 export { generateJSON } from "./generator-json.js";
-
-// Validator
-export { validate, validateText, validateJSON } from "./validator.js";
-
-// Client
-export { AgentsTxtClient } from "./client.js";
-export type { ClientOptions } from "./client.js";
-
-// Types
-export type {
-  AgentsTxtDocument,
-  SiteInfo,
-  Capability,
-  Protocol,
-  AuthConfig,
-  AuthType,
-  RateLimit,
-  RateLimitWindow,
-  AccessControl,
-  AgentPolicy,
-  ParameterDef,
-  ParseResult,
-  ParseError,
-  ParseWarning,
-  ValidationResult,
-  ValidationError,
-  ValidationWarning,
-} from "./types.js";
-
+export { parse } from "./parser.js";
+export { parseJSON } from "./parser-json.js";
 // Schema
 export {
   AgentsTxtDocumentSchema,
-  CapabilitySchema,
-  SiteInfoSchema,
-  RateLimitSchema,
   AuthConfigSchema,
+  CapabilitySchema,
   ProtocolSchema,
+  RateLimitSchema,
+  SiteInfoSchema,
 } from "./schema.js";
 
+// Types
+export type {
+  AccessControl,
+  AgentPolicy,
+  AgentsTxtDocument,
+  AuthConfig,
+  AuthType,
+  Capability,
+  ParameterDef,
+  ParseError,
+  ParseResult,
+  ParseWarning,
+  Protocol,
+  RateLimit,
+  RateLimitWindow,
+  SiteInfo,
+  ValidationError,
+  ValidationResult,
+  ValidationWarning,
+} from "./types.js";
 // Utilities
-export { sanitizeValue, parseRateLimit, formatRateLimit } from "./utils.js";
+export { formatRateLimit, parseRateLimit, sanitizeValue } from "./utils.js";
+// Validator
+export { validate, validateJSON, validateText } from "./validator.js";

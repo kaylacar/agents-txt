@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { generate } from "../src/generator.js";
 import { generateJSON } from "../src/generator-json.js";
 import { parse } from "../src/parser.js";
@@ -75,8 +75,8 @@ describe("roundtrip: generate -> parse", () => {
   it("text roundtrip preserves agent policies", () => {
     const text = generate(testDoc);
     const result = parse(text);
-    expect(result.document?.agents["claude"].rateLimit?.requests).toBe(200);
-    expect(result.document?.agents["claude"].capabilities).toEqual(["search", "assistant"]);
+    expect(result.document?.agents.claude.rateLimit?.requests).toBe(200);
+    expect(result.document?.agents.claude.capabilities).toEqual(["search", "assistant"]);
   });
 
   it("JSON roundtrip produces identical document", () => {
@@ -84,5 +84,63 @@ describe("roundtrip: generate -> parse", () => {
     const result = parseJSON(json);
     expect(result.success).toBe(true);
     expect(result.document).toEqual(testDoc);
+  });
+
+  it("text roundtrip preserves parameters", () => {
+    const doc: AgentsTxtDocument = {
+      ...testDoc,
+      capabilities: [
+        {
+          id: "search",
+          description: "Search",
+          endpoint: "https://roundtrip.example.com/api/search",
+          method: "GET",
+          protocol: "REST",
+          parameters: [
+            { name: "q", in: "query", type: "string", required: true, description: "Search query" },
+            { name: "limit", in: "query", type: "integer" },
+          ],
+        },
+      ],
+    };
+    const text = generate(doc);
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.capabilities[0].parameters).toHaveLength(2);
+    expect(result.document?.capabilities[0].parameters?.[0].name).toBe("q");
+    expect(result.document?.capabilities[0].parameters?.[0].required).toBe(true);
+  });
+
+  it("text roundtrip preserves auth-docs", () => {
+    const doc: AgentsTxtDocument = {
+      ...testDoc,
+      capabilities: [
+        {
+          id: "api",
+          description: "API",
+          endpoint: "https://roundtrip.example.com/api",
+          protocol: "REST",
+          auth: { type: "oauth2", docsUrl: "https://roundtrip.example.com/docs/auth" },
+        },
+      ],
+    };
+    const text = generate(doc);
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.capabilities[0].auth?.docsUrl).toBe("https://roundtrip.example.com/docs/auth");
+  });
+
+  it("roundtrip works with minimal document", () => {
+    const minimal: AgentsTxtDocument = {
+      specVersion: "1.0",
+      site: { name: "Minimal", url: "https://minimal.com" },
+      capabilities: [],
+      access: { allow: ["*"], disallow: [] },
+      agents: { "*": {} },
+    };
+    const text = generate(minimal);
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.site.name).toBe("Minimal");
   });
 });

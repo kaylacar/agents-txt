@@ -1,7 +1,7 @@
+import type { AccessControl, AgentPolicy, AgentsTxtDocument, Capability, SiteInfo } from "@agents-txt/core";
 import { generate, generateJSON } from "@agents-txt/core";
-import type { AgentsTxtDocument, SiteInfo, Capability, AccessControl, AgentPolicy } from "@agents-txt/core";
+import type { NextFunction, Request, Response } from "express";
 import { RateLimiter } from "./rate-limiter.js";
-import type { Request, Response, NextFunction } from "express";
 
 export interface AgentsTxtOptions {
   /** Site identity. */
@@ -36,9 +36,8 @@ export function agentsTxt(options: AgentsTxtOptions) {
   const txtPath = options.paths?.txt ?? "/.well-known/agents.txt";
   const jsonPath = options.paths?.json ?? "/.well-known/agents.json";
 
-  const rateLimiter = options.rateLimit !== false
-    ? new RateLimiter({ defaultLimit: (options.rateLimit && options.rateLimit.defaultLimit) ?? 60 })
-    : null;
+  const rateLimiter =
+    options.rateLimit !== false ? new RateLimiter({ defaultLimit: options.rateLimit?.defaultLimit ?? 60 }) : null;
 
   const corsOrigins = options.corsOrigins ?? ["*"];
 

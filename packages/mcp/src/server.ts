@@ -1,6 +1,6 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { AgentsTxtClient } from "@agents-txt/core";
 import type { AgentsTxtDocument, Capability } from "@agents-txt/core";
+import { AgentsTxtClient } from "@agents-txt/core";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 export interface ServerOptions {
   /** Bearer token for authenticated endpoints. */
@@ -26,9 +26,7 @@ export async function createAgentsTxtServer(
   }
 
   if (!result.success || !result.document) {
-    throw new Error(
-      `Failed to discover agents.txt at ${targetUrl}: ${result.errors.map((e) => e.message).join(", ")}`,
-    );
+    throw new Error(`Failed to discover agents.txt at ${targetUrl}: ${result.errors.map((e) => e.message).join(", ")}`);
   }
 
   const doc = result.document;
@@ -55,7 +53,7 @@ function buildAuthHeaders(cap: Capability, options: ServerOptions): Record<strin
   switch (cap.auth.type) {
     case "bearer-token":
       if (options.bearerToken) {
-        headers["Authorization"] = `Bearer ${options.bearerToken}`;
+        headers.Authorization = `Bearer ${options.bearerToken}`;
       }
       break;
     case "api-key":
@@ -65,7 +63,7 @@ function buildAuthHeaders(cap: Capability, options: ServerOptions): Record<strin
       break;
     case "oauth2":
       if (options.bearerToken) {
-        headers["Authorization"] = `Bearer ${options.bearerToken}`;
+        headers.Authorization = `Bearer ${options.bearerToken}`;
       }
       break;
   }
@@ -88,76 +86,75 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
     }
   }
 
-  server.tool(
-    cap.id,
-    cap.description,
-    properties,
-    async (args: Record<string, unknown>) => {
-      const method = (cap.method ?? "GET").toUpperCase();
-      const url = new URL(cap.endpoint);
-      const authHeaders = buildAuthHeaders(cap, options);
-      const headers: Record<string, string> = {
-        "Accept": "application/json",
-        "User-Agent": "agents-txt-mcp/0.1",
-        ...authHeaders,
-      };
+  server.tool(cap.id, cap.description, properties, async (args: Record<string, unknown>) => {
+    const method = (cap.method ?? "GET").toUpperCase();
+    const url = new URL(cap.endpoint);
+    const authHeaders = buildAuthHeaders(cap, options);
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "User-Agent": "agents-txt-mcp/0.1",
+      ...authHeaders,
+    };
 
-      let body: string | undefined;
+    let body: string | undefined;
 
-      if (method === "GET" || method === "HEAD") {
-        // GET/HEAD: all args go to query string
-        for (const [key, value] of Object.entries(args)) {
-          if (value !== undefined && value !== null) {
-            url.searchParams.set(key, String(value));
-          }
-        }
-      } else {
-        // POST/PUT/PATCH/DELETE: separate query vs body params
-        const bodyArgs: Record<string, unknown> = {};
-        for (const [key, value] of Object.entries(args)) {
-          if (value === undefined || value === null) continue;
-          const paramDef = cap.parameters?.find((p) => p.name === key);
-          if (paramDef?.in === "query") {
-            url.searchParams.set(key, String(value));
-          } else {
-            bodyArgs[key] = value;
-          }
-        }
-        if (Object.keys(bodyArgs).length > 0) {
-          headers["Content-Type"] = "application/json";
-          body = JSON.stringify(bodyArgs);
+    if (method === "GET" || method === "HEAD") {
+      // GET/HEAD: all args go to query string
+      for (const [key, value] of Object.entries(args)) {
+        if (value !== undefined && value !== null) {
+          url.searchParams.set(key, String(value));
         }
       }
+    } else {
+      // POST/PUT/PATCH/DELETE: separate query vs body params
+      const bodyArgs: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(args)) {
+        if (value === undefined || value === null) continue;
+        const paramDef = cap.parameters?.find((p) => p.name === key);
+        if (paramDef?.in === "query") {
+          url.searchParams.set(key, String(value));
+        } else {
+          bodyArgs[key] = value;
+        }
+      }
+      if (Object.keys(bodyArgs).length > 0) {
+        headers["Content-Type"] = "application/json";
+        body = JSON.stringify(bodyArgs);
+      }
+    }
 
-      try {
-        const response = await fetch(url.toString(), {
-          method,
-          headers,
-          body,
-        });
+    try {
+      const response = await fetch(url.toString(), {
+        method,
+        headers,
+        body,
+      });
 
-        const data = await response.text();
+      const data = await response.text();
 
-        if (!response.ok) {
-          return {
-            content: [{
+      if (!response.ok) {
+        return {
+          content: [
+            {
               type: "text" as const,
               text: `Error: HTTP ${response.status} ${response.statusText}\n${data}`,
-            }],
-          };
-        }
-
-        return {
-          content: [{ type: "text" as const, text: data }],
-        };
-      } catch (err) {
-        return {
-          content: [{
-            type: "text" as const,
-            text: `Error calling ${cap.endpoint}: ${err instanceof Error ? err.message : "Unknown error"}`,
-          }],
+            },
+          ],
         };
       }
-    },
-  );
+
+      return {
+        content: [{ type: "text" as const, text: data }],
+      };
+    } catch (err) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Error calling ${cap.endpoint}: ${err instanceof Error ? err.message : "Unknown error"}`,
+          },
+        ],
+      };
+    }
+  });
 }

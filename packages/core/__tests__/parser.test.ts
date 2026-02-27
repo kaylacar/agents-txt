@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { parse } from "../src/parser.js";
 
 const MINIMAL_DOC = `
@@ -100,9 +100,9 @@ describe("parse", () => {
     const result = parse(FULL_DOC);
     const agents = result.document!.agents;
     expect(agents["*"]).toEqual({});
-    expect(agents["claude"].rateLimit?.requests).toBe(200);
-    expect(agents["claude"].capabilities).toEqual(["product-search", "store-assistant"]);
-    expect(agents["gpt"].rateLimit?.requests).toBe(100);
+    expect(agents.claude.rateLimit?.requests).toBe(200);
+    expect(agents.claude.capabilities).toEqual(["product-search", "store-assistant"]);
+    expect(agents.gpt.rateLimit?.requests).toBe(100);
   });
 
   it("parses metadata", () => {
@@ -204,5 +204,216 @@ Capability: search
     const result = parse(doc);
     expect(result.success).toBe(true);
     expect(result.warnings.some((w) => w.message.includes("Invalid parameter"))).toBe(true);
+  });
+
+  // ── Security / edge case tests ──
+
+  it("rejects input exceeding maximum size", () => {
+    const huge = `Site-Name: ${"x".repeat(1024 * 1024 + 1)}\nSite-URL: https://test.com\n`;
+    const result = parse(huge);
+    expect(result.success).toBe(false);
+    expect(result.errors[0].message).toContain("maximum size");
+  });
+
+  it("warns on unknown protocol values", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  Protocol: SOAP
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Unknown protocol"))).toBe(true);
+    expect(result.document!.capabilities[0].protocol).toBe("SOAP");
+  });
+
+  it("warns on invalid rate limit format", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  Protocol: REST
+  Rate-Limit: abc/xyz
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Invalid rate limit"))).toBe(true);
+  });
+
+  it("handles tab-indented capability fields", () => {
+    const doc =
+      "Site-Name: Test\nSite-URL: https://test.com\n\nCapability: search\n\tEndpoint: https://test.com/api\n\tProtocol: REST\n";
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.capabilities[0].endpoint).toBe("https://test.com/api");
+  });
+
+  it("handles Windows-style CRLF line endings", () => {
+    const doc = "Site-Name: Test\r\nSite-URL: https://test.com\r\n";
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document?.site.name).toBe("Test");
+  });
+
+  it("warns on unparseable top-level line", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+this has no colon
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Unparseable line"))).toBe(true);
+  });
+
+  it("warns on unparseable indented line inside capability", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  this has no colon
+  Protocol: REST
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Unparseable indented line"))).toBe(true);
+  });
+
+  it("warns on unknown capability field", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  Protocol: REST
+  Flavor: chocolate
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Unknown capability field"))).toBe(true);
+  });
+
+  it("warns on unknown agent field", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Agent: claude
+  Rate-Limit: 100/minute
+  Priority: high
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Unknown agent field"))).toBe(true);
+  });
+
+  it("handles Auth-Docs field", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  Protocol: REST
+  Auth: oauth2
+  Auth-Docs: https://test.com/docs/auth
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.capabilities[0].auth?.docsUrl).toBe("https://test.com/docs/auth");
+  });
+
+  it("parses all supported rate limit windows", () => {
+    for (const window of ["second", "minute", "hour", "day"]) {
+      const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  Protocol: REST
+  Rate-Limit: 10/${window}
+`;
+      const result = parse(doc);
+      expect(result.success).toBe(true);
+      expect(result.document!.capabilities[0].rateLimit?.window).toBe(window);
+    }
+  });
+
+  it("flushes last capability at end of input", () => {
+    // No trailing newline after last capability
+    const doc = `Site-Name: Test
+Site-URL: https://test.com
+
+Capability: search
+  Endpoint: https://test.com/api
+  Protocol: REST`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.capabilities).toHaveLength(1);
+    expect(result.document!.capabilities[0].id).toBe("search");
+  });
+
+  it("flushes last agent at end of input", () => {
+    const doc = `Site-Name: Test
+Site-URL: https://test.com
+
+Agent: claude
+  Rate-Limit: 100/minute`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.agents.claude.rateLimit?.requests).toBe(100);
+  });
+
+  it("handles multiple capabilities in sequence", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: a
+  Endpoint: https://test.com/a
+  Protocol: REST
+
+Capability: b
+  Endpoint: https://test.com/b
+  Protocol: GraphQL
+
+Capability: c
+  Endpoint: https://test.com/c
+  Protocol: WebSocket
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.capabilities).toHaveLength(3);
+    expect(result.document!.capabilities.map((c) => c.id)).toEqual(["a", "b", "c"]);
+  });
+
+  it("stores unrecognized top-level fields as metadata", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+Custom-Field: custom-value
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.metadata?.["Custom-Field"]).toBe("custom-value");
+  });
+
+  it("handles values containing colons", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document?.site.url).toBe("https://test.com");
   });
 });
