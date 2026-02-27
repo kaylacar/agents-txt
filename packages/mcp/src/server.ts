@@ -151,17 +151,17 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
         }
       }
 
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 30_000);
       try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 30_000);
         const response = await fetch(url.toString(), {
           method,
           headers,
           body,
           signal: controller.signal,
         });
-        clearTimeout(timer);
 
+        // Keep the abort signal active during body read
         const data = await response.text();
 
         if (!response.ok) {
@@ -183,6 +183,8 @@ function registerRestTool(server: McpServer, cap: Capability, options: ServerOpt
             text: `Error calling ${cap.endpoint}: ${err instanceof Error ? err.message : "Unknown error"}`,
           }],
         };
+      } finally {
+        clearTimeout(timer);
       }
     },
   );

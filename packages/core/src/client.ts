@@ -13,6 +13,8 @@ const WELL_KNOWN_TXT = "/.well-known/agents.txt";
 const FALLBACK_TXT = "/agents.txt";
 const WELL_KNOWN_JSON = "/.well-known/agents.json";
 const FALLBACK_JSON = "/agents.json";
+const ALLOWED_SCHEMES = new Set(["http:", "https:"]);
+const MAX_RESPONSE_BYTES = 1_048_576; // 1 MB
 
 /**
  * Client for discovering and fetching agents.txt from websites.
@@ -31,6 +33,7 @@ export class AgentsTxtClient {
    * falls back to /agents.txt.
    */
   async discover(baseUrl: string): Promise<ParseResult> {
+    this.validateUrl(baseUrl);
     const normalized = baseUrl.replace(/\/+$/, "");
 
     // Try well-known first
@@ -53,6 +56,7 @@ export class AgentsTxtClient {
    * falls back to /agents.json.
    */
   async discoverJSON(baseUrl: string): Promise<ParseResult> {
+    this.validateUrl(baseUrl);
     const normalized = baseUrl.replace(/\/+$/, "");
 
     const primary = await this.fetchText(`${normalized}${WELL_KNOWN_JSON}`);
@@ -68,6 +72,18 @@ export class AgentsTxtClient {
     };
   }
 
+  private validateUrl(url: string): void {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw new Error(`Invalid URL: ${url}`);
+    }
+    if (!ALLOWED_SCHEMES.has(parsed.protocol)) {
+      throw new Error(`Unsupported URL scheme: ${parsed.protocol} (only http and https are allowed)`);
+    }
+  }
+
   private async fetchText(url: string): Promise<string | null> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeout);
@@ -75,12 +91,22 @@ export class AgentsTxtClient {
     try {
       const response = await fetch(url, {
         headers: { "User-Agent": this.userAgent },
+        redirect: "follow",
         signal: controller.signal,
       });
 
       if (!response.ok) return null;
-      // Body read is also covered by the abort signal
-      return await response.text();
+
+      // Check Content-Length if available to reject oversized responses early
+      const contentLength = response.headers.get("content-length");
+      if (contentLength && parseInt(contentLength, 10) > MAX_RESPONSE_BYTES) {
+        return null;
+      }
+
+      const text = await response.text();
+      if (text.length > MAX_RESPONSE_BYTES) return null;
+
+      return text;
     } catch {
       return null;
     } finally {

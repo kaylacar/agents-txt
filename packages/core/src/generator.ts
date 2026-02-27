@@ -9,9 +9,9 @@ export function generate(doc: AgentsTxtDocument): string {
 
   // Header
   lines.push("# agents.txt — AI Agent Capability Declaration");
-  lines.push(`# Spec-Version: ${doc.specVersion}`);
+  lines.push(`# Spec-Version: ${sanitizeValue(doc.specVersion)}`);
   if (doc.generatedAt) {
-    lines.push(`# Generated-At: ${doc.generatedAt}`);
+    lines.push(`# Generated-At: ${sanitizeValue(doc.generatedAt)}`);
   }
   lines.push("");
 
@@ -86,7 +86,7 @@ export function generate(doc: AgentsTxtDocument): string {
       lines.push(`  Rate-Limit: ${formatRateLimit(policy.rateLimit.requests, policy.rateLimit.window)}`);
     }
     if (policy.capabilities && policy.capabilities.length > 0) {
-      lines.push(`  Capabilities: ${policy.capabilities.join(", ")}`);
+      lines.push(`  Capabilities: ${policy.capabilities.map((c) => sanitizeValue(c)).join(", ")}`);
     }
   }
   lines.push("");
@@ -94,7 +94,7 @@ export function generate(doc: AgentsTxtDocument): string {
   // Metadata
   if (doc.metadata) {
     for (const [key, value] of Object.entries(doc.metadata)) {
-      lines.push(`${key}: ${sanitizeValue(value)}`);
+      lines.push(`${sanitizeValue(key)}: ${sanitizeValue(value)}`);
     }
   }
 

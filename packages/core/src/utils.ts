@@ -1,3 +1,5 @@
+import type { RateLimitWindow } from "./types.js";
+
 /**
  * Sanitize a value for the agents.txt text format.
  * Prevents newline injection and strips control characters.
@@ -10,8 +12,6 @@ export function sanitizeValue(value: unknown, maxLength = 500): string {
     .trim()
     .slice(0, maxLength);
 }
-
-import type { RateLimitWindow } from "./types.js";
 
 /**
  * Parse a rate limit string like "60/minute" into a RateLimit object.
