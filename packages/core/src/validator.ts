@@ -50,23 +50,45 @@ export function validate(doc: AgentsTxtDocument): ValidationResult {
     }
   }
 
-  // Site URL should be HTTPS
-  if (doc.site.url && !doc.site.url.startsWith("https://")) {
-    warnings.push({
-      path: "site.url",
-      message: "Site URL should use HTTPS",
-      code: "INSECURE_URL",
-    });
+  // Site URL must be a valid URL
+  if (doc.site.url) {
+    try {
+      new URL(doc.site.url);
+    } catch {
+      errors.push({
+        path: "site.url",
+        message: `Invalid site URL: "${doc.site.url}"`,
+        code: "INVALID_URL",
+      });
+    }
+    if (!doc.site.url.startsWith("https://")) {
+      warnings.push({
+        path: "site.url",
+        message: "Site URL should use HTTPS",
+        code: "INSECURE_URL",
+      });
+    }
   }
 
-  // Endpoint URLs should be HTTPS
+  // Endpoint URLs must be valid and should be HTTPS
   for (const cap of doc.capabilities) {
-    if (cap.endpoint && !cap.endpoint.startsWith("https://")) {
-      warnings.push({
-        path: `capabilities.${cap.id}.endpoint`,
-        message: `Capability "${cap.id}" endpoint should use HTTPS`,
-        code: "INSECURE_ENDPOINT",
-      });
+    if (cap.endpoint) {
+      try {
+        new URL(cap.endpoint);
+      } catch {
+        errors.push({
+          path: `capabilities.${cap.id}.endpoint`,
+          message: `Capability "${cap.id}" has invalid endpoint URL: "${cap.endpoint}"`,
+          code: "INVALID_URL",
+        });
+      }
+      if (!cap.endpoint.startsWith("https://")) {
+        warnings.push({
+          path: `capabilities.${cap.id}.endpoint`,
+          message: `Capability "${cap.id}" endpoint should use HTTPS`,
+          code: "INSECURE_ENDPOINT",
+        });
+      }
     }
   }
 

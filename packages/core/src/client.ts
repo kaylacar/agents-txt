@@ -35,15 +35,15 @@ export class AgentsTxtClient {
 
     // Try well-known first
     const primary = await this.fetchText(`${normalized}${WELL_KNOWN_TXT}`);
-    if (primary) return parse(primary);
+    if (primary.ok) return parse(primary.text);
 
     // Fallback
     const fallback = await this.fetchText(`${normalized}${FALLBACK_TXT}`);
-    if (fallback) return parse(fallback);
+    if (fallback.ok) return parse(fallback.text);
 
     return {
       success: false,
-      errors: [{ message: `No agents.txt found at ${normalized}` }],
+      errors: [{ message: `No agents.txt found at ${normalized} (${fallback.error ?? primary.error ?? "not found"})` }],
       warnings: [],
     };
   }
@@ -56,19 +56,19 @@ export class AgentsTxtClient {
     const normalized = baseUrl.replace(/\/+$/, "");
 
     const primary = await this.fetchText(`${normalized}${WELL_KNOWN_JSON}`);
-    if (primary) return parseJSON(primary);
+    if (primary.ok) return parseJSON(primary.text);
 
     const fallback = await this.fetchText(`${normalized}${FALLBACK_JSON}`);
-    if (fallback) return parseJSON(fallback);
+    if (fallback.ok) return parseJSON(fallback.text);
 
     return {
       success: false,
-      errors: [{ message: `No agents.json found at ${normalized}` }],
+      errors: [{ message: `No agents.json found at ${normalized} (${fallback.error ?? primary.error ?? "not found"})` }],
       warnings: [],
     };
   }
 
-  private async fetchText(url: string): Promise<string | null> {
+  private async fetchText(url: string): Promise<{ ok: true; text: string } | { ok: false; error: string }> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeout);
 
@@ -78,11 +78,11 @@ export class AgentsTxtClient {
         signal: controller.signal,
       });
 
-      if (!response.ok) return null;
-      // Body read is also covered by the abort signal
-      return await response.text();
-    } catch {
-      return null;
+      if (!response.ok) return { ok: false, error: `HTTP ${response.status}` };
+      return { ok: true, text: await response.text() };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "unknown error";
+      return { ok: false, error: message };
     } finally {
       clearTimeout(timer);
     }

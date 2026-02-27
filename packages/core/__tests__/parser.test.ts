@@ -7,8 +7,8 @@ Site-URL: https://example.com
 `;
 
 const FULL_DOC = `# agents.txt — AI Agent Capability Declaration
-# Spec-Version: 1.0
-# Generated: 2026-01-01T00:00:00.000Z
+Spec-Version: 1.0
+Generated-At: 2026-01-01T00:00:00.000Z
 
 Site-Name: Example Store
 Site-URL: https://example.com

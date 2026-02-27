@@ -72,11 +72,6 @@ export function parse(input: string): ParseResult {
 
     // Skip empty lines and comments
     if (trimmed === "" || trimmed.startsWith("#")) {
-      // Extract spec version and generated date from comments
-      const specMatch = trimmed.match(/^#\s*Spec-Version:\s*(.+)/i);
-      if (specMatch) specVersion = specMatch[1].trim();
-      const genMatch = trimmed.match(/^#\s*Generated(?:-At)?:\s*(.+)/i);
-      if (genMatch) generatedAt = genMatch[1].trim();
       continue;
     }
 
@@ -214,7 +209,8 @@ export function parse(input: string): ParseResult {
         state = "IN_AGENT";
         break;
       default:
-        // Store as metadata
+        // Store as metadata but warn — could be a typo
+        warnings.push({ line: lineNum, message: `Unknown top-level field "${key}", treating as metadata` });
         metadata[key] = value;
     }
   }
@@ -229,6 +225,10 @@ export function parse(input: string): ParseResult {
 
   if (errors.length > 0) {
     return { success: false, errors, warnings };
+  }
+
+  if (allowPaths.length === 0) {
+    warnings.push({ message: "No access rules specified, defaulting to Allow: *" });
   }
 
   const document: AgentsTxtDocument = {
