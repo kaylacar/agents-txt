@@ -191,6 +191,50 @@ Site-Privacy-Policy: https://test.com/privacy
     expect(result.document!.site.privacyPolicy).toBe("https://test.com/privacy");
   });
 
+  it("handles __proto__ agent name without prototype pollution", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Agent: __proto__
+  Rate-Limit: 100/minute
+Agent: normal
+  Rate-Limit: 50/minute
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    const agents = result.document!.agents;
+    // __proto__ should be a normal key, not pollute the prototype
+    expect(agents["__proto__"]).toBeDefined();
+    expect(agents["__proto__"].rateLimit?.requests).toBe(100);
+    expect(agents["normal"].rateLimit?.requests).toBe(50);
+    // Verify no prototype pollution
+    expect(({} as Record<string, unknown>)["rateLimit"]).toBeUndefined();
+  });
+
+  it("handles __proto__ in metadata without prototype pollution", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+__proto__: malicious
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.metadata?.["__proto__"]).toBe("malicious");
+  });
+
+  it("parses Spec-Version and Generated-At as top-level fields", () => {
+    const doc = `Spec-Version: 2.0
+Generated-At: 2026-06-01T00:00:00.000Z
+Site-Name: Test
+Site-URL: https://test.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.specVersion).toBe("2.0");
+    expect(result.document!.generatedAt).toBe("2026-06-01T00:00:00.000Z");
+  });
+
   it("warns on invalid Param format", () => {
     const doc = `
 Site-Name: Test

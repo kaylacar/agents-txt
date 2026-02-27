@@ -131,6 +131,47 @@ describe("agentsTxt middleware", () => {
   });
 });
 
+describe("method handling", () => {
+  it("rejects POST with 405", async () => {
+    const app = createApp();
+    const res = await request(app, "/.well-known/agents.txt", { method: "POST" });
+    expect(res.status).toBe(405);
+    expect(res.headers.get("allow")).toContain("GET");
+    expect(res.headers.get("allow")).toContain("OPTIONS");
+  });
+
+  it("rejects PUT with 405", async () => {
+    const app = createApp();
+    const res = await request(app, "/.well-known/agents.txt", { method: "PUT" });
+    expect(res.status).toBe(405);
+  });
+
+  it("rejects DELETE with 405", async () => {
+    const app = createApp();
+    const res = await request(app, "/.well-known/agents.json", { method: "DELETE" });
+    expect(res.status).toBe(405);
+  });
+});
+
+describe("lifecycle", () => {
+  it("destroy() does not throw when rate limiter is active", () => {
+    const mw = agentsTxt({
+      site: { name: "T", url: "https://t.com" },
+      capabilities: [],
+    });
+    expect(() => mw.destroy()).not.toThrow();
+  });
+
+  it("destroy() does not throw when rate limiter is disabled", () => {
+    const mw = agentsTxt({
+      site: { name: "T", url: "https://t.com" },
+      capabilities: [],
+      rateLimit: false,
+    });
+    expect(() => mw.destroy()).not.toThrow();
+  });
+});
+
 describe("rate limiter integration", () => {
   it("returns rate limit headers", async () => {
     const app = createApp();
@@ -138,11 +179,21 @@ describe("rate limiter integration", () => {
     expect(res.headers.get("x-ratelimit-remaining")).toBeDefined();
   });
 
-  it("can disable rate limiting", async () => {
+  it("can disable rate limiting with false", async () => {
     const app = createApp({
       site: { name: "T", url: "https://t.com" },
       capabilities: [],
       rateLimit: false,
+    });
+    const res = await request(app, "/.well-known/agents.txt");
+    expect(res.headers.get("x-ratelimit-remaining")).toBeNull();
+  });
+
+  it("can disable rate limiting with enabled: false", async () => {
+    const app = createApp({
+      site: { name: "T", url: "https://t.com" },
+      capabilities: [],
+      rateLimit: { enabled: false },
     });
     const res = await request(app, "/.well-known/agents.txt");
     expect(res.headers.get("x-ratelimit-remaining")).toBeNull();

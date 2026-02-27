@@ -64,6 +64,13 @@ describe("validate", () => {
     expect(result.warnings.some((w) => w.code === "INSECURE_ENDPOINT")).toBe(true);
   });
 
+  it("does not warn on wss:// WebSocket endpoints", () => {
+    const doc = makeValidDoc();
+    doc.capabilities[0].endpoint = "wss://valid.example.com/ws";
+    const result = validate(doc);
+    expect(result.warnings.some((w) => w.code === "INSECURE_ENDPOINT")).toBe(false);
+  });
+
   it("accepts valid agent capability references", () => {
     const doc = makeValidDoc();
     doc.agents["claude"] = { capabilities: ["search"] };

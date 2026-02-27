@@ -92,6 +92,49 @@ describe("generate (text format)", () => {
     expect(txt).toContain("Site-Name: Evil Fake-Header: injected");
   });
 
+  it("sanitizes newline injection in capability endpoint", () => {
+    const doc = makeDoc();
+    doc.capabilities[0].endpoint = "https://evil.com\nX-Injected: true";
+    const txt = generate(doc);
+    expect(txt).not.toContain("\nX-Injected:");
+  });
+
+  it("sanitizes newline injection in specVersion", () => {
+    const doc = makeDoc();
+    doc.specVersion = "1.0\nEvil-Header: injected";
+    const txt = generate(doc);
+    expect(txt).not.toContain("\nEvil-Header:");
+    expect(txt).toContain("# Spec-Version: 1.0 Evil-Header: injected");
+  });
+
+  it("sanitizes newline injection in agent names", () => {
+    const doc = makeDoc();
+    doc.agents["evil\nAllow: /admin/*"] = {};
+    const txt = generate(doc);
+    expect(txt).not.toContain("\nAllow: /admin/*");
+  });
+
+  it("sanitizes newline injection in metadata keys", () => {
+    const doc = makeDoc();
+    doc.metadata = { "Evil\nAllow: /admin/*": "value" };
+    const txt = generate(doc);
+    expect(txt).not.toContain("\nAllow: /admin/*");
+  });
+
+  it("sanitizes newline injection in capability names in agent policies", () => {
+    const doc = makeDoc();
+    doc.agents["claude"].capabilities = ["search\nAllow: /admin/*"];
+    const txt = generate(doc);
+    expect(txt).not.toContain("\nAllow: /admin/*");
+  });
+
+  it("strips control characters including DEL", () => {
+    const doc = makeDoc();
+    doc.site.name = "Store\x00With\x7fControl\x1bChars";
+    const txt = generate(doc);
+    expect(txt).toContain("Site-Name: StoreWithControlChars");
+  });
+
   it("includes auth details when present", () => {
     const doc = makeDoc();
     doc.capabilities[0].auth = {
