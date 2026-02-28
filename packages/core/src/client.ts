@@ -43,7 +43,7 @@ export class AgentsTxtClient {
 
     return {
       success: false,
-      errors: [{ message: `No agents.txt found at ${normalized} (${fallback.error ?? primary.error ?? "not found"})` }],
+      errors: [{ message: `No agents.txt found at ${normalized} (${fallback.error ?? primary.error ?? "not found"})`, code: "DISCOVERY_FAILED" }],
       warnings: [],
     };
   }
@@ -63,7 +63,7 @@ export class AgentsTxtClient {
 
     return {
       success: false,
-      errors: [{ message: `No agents.json found at ${normalized} (${fallback.error ?? primary.error ?? "not found"})` }],
+      errors: [{ message: `No agents.json found at ${normalized} (${fallback.error ?? primary.error ?? "not found"})`, code: "DISCOVERY_FAILED" }],
       warnings: [],
     };
   }

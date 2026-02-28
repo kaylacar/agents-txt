@@ -229,6 +229,22 @@ describe("AgentsTxtClient", () => {
       expect(result.success).toBe(true);
     });
 
+    it("includes DISCOVERY_FAILED error code", async () => {
+      handler = (_req, res) => {
+        res.writeHead(404);
+        res.end();
+      };
+
+      const client = new AgentsTxtClient();
+      const result = await client.discover(`http://127.0.0.1:${port}`);
+      expect(result.success).toBe(false);
+      expect(result.errors[0].code).toBe("DISCOVERY_FAILED");
+
+      const jsonResult = await client.discoverJSON(`http://127.0.0.1:${port}`);
+      expect(jsonResult.success).toBe(false);
+      expect(jsonResult.errors[0].code).toBe("DISCOVERY_FAILED");
+    });
+
     it("reports the underlying error in the message", async () => {
       handler = (req, res) => {
         if (req.url === "/.well-known/agents.txt") {

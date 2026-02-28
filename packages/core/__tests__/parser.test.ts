@@ -262,4 +262,32 @@ Bogus-Field: something
     expect(result.success).toBe(true);
     expect(result.warnings.some((w) => w.code === "UNKNOWN_FIELD")).toBe(true);
   });
+
+  it("warns with UNKNOWN_PROTOCOL code for unrecognized protocols", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: rpc-endpoint
+  Endpoint: https://test.com/rpc
+  Protocol: gRPC
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.code === "UNKNOWN_PROTOCOL")).toBe(true);
+    expect(result.document!.capabilities[0].protocol).toBe("gRPC");
+  });
+
+  it("warns with INVALID_RATE_LIMIT code for bad rate limits in agent blocks", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Agent: claude
+  Rate-Limit: not-a-rate-limit
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.code === "INVALID_RATE_LIMIT")).toBe(true);
+  });
 });

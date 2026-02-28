@@ -11,7 +11,7 @@ export function parseJSON(input: string): ParseResult {
   } catch (err) {
     return {
       success: false,
-      errors: [{ message: `Invalid JSON: ${err instanceof Error ? err.message : "parse error"}` }],
+      errors: [{ message: `Invalid JSON: ${err instanceof Error ? err.message : "parse error"}`, code: "INVALID_JSON" }],
       warnings: [],
     };
   }
@@ -24,6 +24,7 @@ export function parseJSON(input: string): ParseResult {
       errors: result.error.issues.map((issue) => ({
         field: issue.path.join("."),
         message: issue.message,
+        code: "SCHEMA_VIOLATION",
       })),
       warnings: [],
     };
