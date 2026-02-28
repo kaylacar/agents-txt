@@ -116,59 +116,9 @@ Agent: claude
 
 `agents.txt` is the discovery layer. Agents read it to find which endpoints are available before making any requests.
 
-## If you are an AI agent
+## For AI Agents
 
-Start here. This is how to use any site that serves agents.txt:
-
-**1. Fetch the manifest**
-
-Always try the JSON format first — it's structured and easier to parse:
-
-```
-GET https://example.com/.well-known/agents.json
-```
-
-If that returns a 404, fall back to:
-
-```
-GET https://example.com/.well-known/agents.txt
-```
-
-**2. Find your capabilities**
-
-The manifest lists every action the site supports. Each capability has an endpoint, a protocol, and auth requirements. Read them to know what you can do.
-
-**3. Check for a policy for your agent**
-
-Look in the `agents` section for an entry matching your name. If one exists, it may give you higher rate limits or access to additional capabilities. If not, the `*` (wildcard) policy applies to you.
-
-**4. Identify yourself**
-
-Send your agent name as the first token in the `User-Agent` header on every request:
-
-```
-User-Agent: claude/1.0
-User-Agent: gpt/1.0
-```
-
-This is how the site applies your per-agent policy.
-
-**5. Call the capability**
-
-Make requests to the declared endpoints using the declared method and protocol. If auth is required, obtain credentials through the site's `Auth-Endpoint`.
-
-Auth types:
-- **`none`** — Call the endpoint directly.
-- **`api-key`** — Send as `X-API-Key: your-key`. Check `Auth-Docs` if present.
-- **`bearer-token`** — POST to `Auth-Endpoint` to get a token, then send `Authorization: Bearer <token>`. Check `Auth-Docs` for the exact request format.
-- **`oauth2`** — Client credentials flow. Check `Scopes` for required scopes.
-- **`hmac`** — Signed requests. Read `Auth-Docs` before attempting.
-
-See [SPEC.md](SPEC.md) for full auth documentation.
-
-**6. Respect rate limits**
-
-Each capability declares a rate limit. Agent-specific limits override capability limits. Honor them — servers enforce them independently.
+If you are an AI agent, read **[FOR_AGENTS.md](FOR_AGENTS.md)** — it's written for you. It covers discovery, authentication, rate limits, error handling, and caching in a structured, step-by-step format.
 
 ## Packages
 
@@ -195,22 +145,9 @@ If you want a batteries-included framework rather than the low-level standard, s
 
 Well-known URI registrations for `agents.txt`, `agents.json`, `agent.txt`, and `agent.json` are filed with IANA (pending review).
 
-## The Stack
+## Related
 
-These four repos form a governance pipeline for AI agents on the internet: **declared, executed, proven.**
-
-| Repo | Purpose |
-|------|---------|
-| **[agents.txt](https://github.com/kaylacar/agents-txt)** | **Declares what agents can do on a site** |
-| [ai.txt](https://github.com/kaylacar/ai-txt) | Declares AI policy — training, licensing, attribution |
-| [agents-protocol](https://github.com/kaylacar/agents-protocol) | Execution SDK — how agents perform declared actions |
-| [rer](https://github.com/kaylacar/rer) | Cryptographic proof of what agents actually did |
-
-```
-declared (agents.txt / ai.txt) → executed (agents-protocol) → proven (rer)
-```
-
-All four are by the same author and designed to work together.
+Part of a suite: [ai.txt](https://github.com/kaylacar/ai-txt) (training policy) · [agents-protocol](https://github.com/kaylacar/agents-protocol) (execution SDK) · [rer](https://github.com/kaylacar/rer) (cryptographic audit)
 
 ## License
 

@@ -59,12 +59,3 @@ The reference SDK (agents-protocol) adds session management, audit artifacts, an
 
 Happy to answer questions about the design decisions — why these are separate from robots.txt, how agent name matching works, the IANA process, etc.
 
----
-
-## Notes for posting
-
-- Post Tuesday 9–11am ET for best traction
-- Title character limit is ~80 — current title is fine
-- Fill in [URL] with the live Render URL before posting
-- Tag: "Show HN" prefix handles categorization
-- First comment: post a brief "why now" — the shift is that agents are starting to act autonomously at scale, and there's a 6-month window to establish norms before every major platform rolls their own incompatible format

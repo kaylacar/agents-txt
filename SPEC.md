@@ -451,11 +451,36 @@ Capabilities declared in `agents.txt` apply only to the declaring domain. A file
 
 ### 9.2 For Agent Developers
 
-1. Check for `/.well-known/agents.json` first (more structured), fall back to `/.well-known/agents.txt`.
-2. Identify your agent via the `User-Agent` header.
-3. Respect declared rate limits.
-4. Check agent-specific policies before accessing capabilities.
-5. Honor `Allow`/`Disallow` directives.
+A complete operational guide is available at [FOR_AGENTS.md](FOR_AGENTS.md). Key requirements:
+
+**Discovery:**
+1. Fetch `/.well-known/agents.json` first. If `404`, fall back to `/.well-known/agents.txt`.
+2. If both return `404`, this site does not declare agent capabilities. Do not assume access.
+3. If the manifest cannot be fetched or parsed, fail closed — do not assume capabilities exist.
+
+**Identity:**
+4. Send your agent name as the first token of the `User-Agent` header on every request.
+5. Agent matching is case-insensitive against the first token (before `/` or space).
+
+**Policy precedence:**
+6. Agent-specific policy overrides the `*` (wildcard) policy.
+7. If no matching agent block and no `*` block, all capabilities are available at capability-level rate limits.
+8. When both agent-level and capability-level rate limits exist, the more restrictive limit applies.
+
+**Error handling:**
+9. On `429 Too Many Requests`, respect the `Retry-After` header. Do not retry before it expires.
+10. On `401`/`403`, do not retry with the same credentials. Re-read `Auth-Docs` if available.
+11. On `404` from a declared capability endpoint, re-fetch the manifest — the capability may have been removed.
+12. On `5xx`, retry once after 5 seconds. Do not retry indefinitely.
+
+**Caching:**
+13. Respect `Cache-Control` headers on the manifest response.
+14. If no caching header is present, do not re-fetch more than once per 5 minutes.
+15. Re-fetch immediately if a capability endpoint returns `404`.
+
+**Access control:**
+16. Honor `Allow`/`Disallow` directives using robots.txt semantics (more specific patterns take precedence).
+17. Capability endpoint declarations take precedence over `Disallow` — a declared capability is accessible regardless of a matching `Disallow` pattern.
 
 ### 9.3 For Tooling
 
