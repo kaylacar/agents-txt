@@ -130,6 +130,31 @@ describe("roundtrip: generate -> parse", () => {
     expect(result.document?.capabilities[0].auth?.docsUrl).toBe("https://roundtrip.example.com/docs/auth");
   });
 
+  it("text roundtrip preserves registration-endpoint", () => {
+    const doc: AgentsTxtDocument = {
+      ...testDoc,
+      capabilities: [
+        {
+          id: "api",
+          description: "API",
+          endpoint: "https://roundtrip.example.com/api",
+          protocol: "REST",
+          auth: {
+            type: "oauth2",
+            tokenEndpoint: "https://roundtrip.example.com/oauth/token",
+            registrationEndpoint: "https://roundtrip.example.com/oauth/register",
+          },
+        },
+      ],
+    };
+    const text = generate(doc);
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.capabilities[0].auth?.registrationEndpoint).toBe(
+      "https://roundtrip.example.com/oauth/register",
+    );
+  });
+
   it("roundtrip works with minimal document", () => {
     const minimal: AgentsTxtDocument = {
       specVersion: "1.0",

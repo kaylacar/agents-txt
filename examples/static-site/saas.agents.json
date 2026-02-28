@@ -1,0 +1,88 @@
+{
+  "specVersion": "1.0",
+  "site": {
+    "name": "My SaaS",
+    "url": "https://example.com",
+    "description": "Project management platform with a public API",
+    "contact": "api@example.com"
+  },
+  "capabilities": [
+    {
+      "id": "list-projects",
+      "endpoint": "https://example.com/api/v1/projects",
+      "method": "GET",
+      "protocol": "REST",
+      "auth": {
+        "type": "oauth2",
+        "tokenEndpoint": "https://example.com/oauth/token",
+        "registrationEndpoint": "https://example.com/oauth/register",
+        "docsUrl": "https://example.com/docs/auth",
+        "scopes": ["projects:read"]
+      },
+      "rateLimit": { "requests": 100, "window": "minute" },
+      "description": "List projects the authenticated user has access to",
+      "parameters": [
+        { "name": "status", "in": "query", "type": "string", "description": "Filter by status (active, archived)" }
+      ]
+    },
+    {
+      "id": "search-tasks",
+      "endpoint": "https://example.com/api/v1/tasks/search",
+      "method": "GET",
+      "protocol": "REST",
+      "auth": {
+        "type": "oauth2",
+        "tokenEndpoint": "https://example.com/oauth/token",
+        "registrationEndpoint": "https://example.com/oauth/register",
+        "scopes": ["tasks:read"]
+      },
+      "rateLimit": { "requests": 60, "window": "minute" },
+      "description": "Search tasks across all projects",
+      "parameters": [
+        { "name": "q", "in": "query", "type": "string", "required": true, "description": "Search query" },
+        { "name": "project_id", "in": "query", "type": "string", "description": "Filter by project" }
+      ]
+    },
+    {
+      "id": "create-task",
+      "endpoint": "https://example.com/api/v1/tasks",
+      "method": "POST",
+      "protocol": "REST",
+      "auth": {
+        "type": "oauth2",
+        "tokenEndpoint": "https://example.com/oauth/token",
+        "registrationEndpoint": "https://example.com/oauth/register",
+        "scopes": ["tasks:write"]
+      },
+      "rateLimit": { "requests": 30, "window": "minute" },
+      "description": "Create a new task in a project"
+    },
+    {
+      "id": "public-status",
+      "endpoint": "https://example.com/api/status",
+      "method": "GET",
+      "protocol": "REST",
+      "auth": { "type": "none" },
+      "rateLimit": { "requests": 10, "window": "minute" },
+      "description": "Check platform status and uptime"
+    }
+  ],
+  "access": {
+    "allow": ["/api/v1/*", "/api/status"],
+    "disallow": ["/api/internal/*", "/admin/*"]
+  },
+  "agents": {
+    "*": {
+      "rateLimit": { "requests": 60, "window": "minute" },
+      "capabilities": ["public-status"]
+    },
+    "claude": {
+      "rateLimit": { "requests": 200, "window": "minute" },
+      "capabilities": ["list-projects", "search-tasks", "create-task", "public-status"]
+    },
+    "gpt": {
+      "rateLimit": { "requests": 200, "window": "minute" },
+      "capabilities": ["list-projects", "search-tasks", "create-task", "public-status"]
+    }
+  }
+}

@@ -73,6 +73,8 @@ export interface AuthConfig {
   tokenEndpoint?: string;
   /** URL to documentation describing the authentication flow. */
   docsUrl?: string;
+  /** URL for RFC 7591 Dynamic Client Registration. */
+  registrationEndpoint?: string;
   /** OAuth2 scopes available. */
   scopes?: string[];
 }

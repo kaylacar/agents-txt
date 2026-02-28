@@ -114,7 +114,7 @@ Agent: claude
 | `AGENTS.md` | "Instructions for coding agents" (dev tooling) |
 | **`agents.txt`** | **"Here's what you can DO, and how"** (capability declaration) |
 
-`agents.txt` is the discovery layer. Agents read it to find which endpoints are available before making any requests.
+`agents.txt` is the discovery layer — it tells agents what exists and how to authenticate. The `Protocol` field (REST, MCP, A2A, GraphQL, WebSocket) declares the runtime. The `@agents-txt/mcp` package bridges the two: it reads any site's `agents.txt` and exposes the capabilities as MCP tools.
 
 ## For AI Agents
 

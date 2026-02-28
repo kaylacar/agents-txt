@@ -148,6 +148,17 @@ describe("generate (text format)", () => {
     expect(txt).not.toContain("Generated:");
   });
 
+  it("includes Registration-Endpoint when present", () => {
+    const doc = makeDoc();
+    doc.capabilities[0].auth = {
+      type: "oauth2",
+      tokenEndpoint: "https://test.example.com/oauth/token",
+      registrationEndpoint: "https://test.example.com/oauth/register",
+    };
+    const txt = generate(doc);
+    expect(txt).toContain("  Registration-Endpoint: https://test.example.com/oauth/register");
+  });
+
   it("includes Auth-Docs when present", () => {
     const doc = makeDoc();
     doc.capabilities[0].auth = {

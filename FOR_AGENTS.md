@@ -90,8 +90,16 @@ Check the `auth` field on each capability before calling it.
 | `none` | Call the endpoint directly. No credentials needed. |
 | `api-key` | Send your key as `X-API-Key: {key}` header. You must already have a key (obtain out-of-band via the site's developer portal). If `Auth-Docs` is present, read it for specifics. |
 | `bearer-token` | `POST` to the `Auth-Endpoint` to obtain a token. Send `Authorization: Bearer {token}` on subsequent requests. If `Auth-Docs` is present, read it for the exact request format. |
-| `oauth2` | Client credentials flow against the `Auth-Endpoint`. Check `Scopes` for required scopes. Send `Authorization: Bearer {access_token}`. |
+| `oauth2` | Client credentials flow against the `Auth-Endpoint`. Check `Scopes` for required scopes. If `Registration-Endpoint` is present, you can self-provision credentials (see below). Send `Authorization: Bearer {access_token}`. |
 | `hmac` | Signed requests. You MUST read `Auth-Docs` before attempting — the signing algorithm is site-specific. |
+
+**Dynamic Client Registration (RFC 7591):** If a capability includes `Registration-Endpoint`, you can obtain credentials autonomously:
+1. `POST` to `Registration-Endpoint` with your client metadata (name, redirect URIs, grant types).
+2. Receive `client_id` and `client_secret`.
+3. Use these at `Auth-Endpoint` to get an access token.
+4. Cache the credentials — do not re-register on every request.
+
+If no `Registration-Endpoint` is present, obtain credentials out-of-band (developer portal, etc.).
 
 If authentication fails (`401`), do not retry with the same credentials. Re-read `Auth-Docs` if available.
 
@@ -112,6 +120,8 @@ This is how the site applies your per-agent policy.
 - `A2A` — connect using the Agent-to-Agent Protocol
 - `GraphQL` — POST queries to the endpoint
 - `WebSocket` — open a persistent connection to the endpoint
+
+**Note:** `agents.txt` is the discovery layer — it tells you what exists. The `Protocol` field tells you which runtime to use. If a site declares `Protocol: REST` but you are an MCP-native agent, you can use the `@agents-txt/mcp` bridge (`npx @agents-txt/mcp --url https://example.com`) to consume REST capabilities as MCP tools.
 
 **Parameters** (REST): Send parameters in the declared location (`query`, `path`, `header`, or `body`) with the declared type.
 

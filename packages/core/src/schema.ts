@@ -13,6 +13,7 @@ export const AuthConfigSchema = z.object({
   type: AuthTypeSchema,
   tokenEndpoint: z.string().url().optional(),
   docsUrl: z.string().url().optional(),
+  registrationEndpoint: z.string().url().optional(),
   scopes: z.array(z.string()).optional(),
 });
 

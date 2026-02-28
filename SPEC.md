@@ -152,6 +152,7 @@ Capability: product-search
 | `Auth` | OPTIONAL | Auth type: `none`, `api-key`, `bearer-token`, `oauth2`, `hmac`. Default: `none`. |
 | `Auth-Endpoint` | OPTIONAL | URL where agents obtain tokens. Required for `bearer-token` and `oauth2`. |
 | `Auth-Docs` | OPTIONAL | URL to documentation describing the authentication flow for this capability. |
+| `Registration-Endpoint` | OPTIONAL | URL for RFC 7591 Dynamic Client Registration. Allows agents to self-provision OAuth2 credentials. |
 | `Rate-Limit` | OPTIONAL | Rate limit in format `N/window` (e.g., `60/minute`). |
 | `Description` | OPTIONAL | Human-readable description of the capability. |
 | `OpenAPI` | OPTIONAL | URL to an OpenAPI specification for this endpoint. |
@@ -345,6 +346,19 @@ Capability: live-updates
   Protocol: WebSocket
 ```
 
+### 5.6 Discovery vs. Runtime
+
+`agents.txt` is a **discovery layer** — it tells agents what capabilities exist, where to find them, and how to authenticate. The `Protocol` field declares which **runtime protocol** the agent should use to invoke the capability:
+
+| Layer | Role | Examples |
+|-------|------|----------|
+| **Discovery** | Find capabilities and their metadata | `agents.txt`, `agents.json` |
+| **Runtime** | Invoke capabilities | REST, MCP, A2A, GraphQL, WebSocket |
+
+This separation means a single `agents.txt` file can advertise endpoints spanning multiple runtime protocols. An agent reads the manifest once, then connects to each capability using its declared protocol.
+
+**MCP bridge:** The `@agents-txt/mcp` package demonstrates this relationship — it reads any site's `agents.txt` and exposes the declared capabilities as MCP tools, converting the discovery layer into a runtime interface that MCP-native agents can consume directly.
+
 ## 6. Authentication
 
 ### 6.1 Principles
@@ -379,6 +393,28 @@ Capability: store-assistant
 ```
 
 Agents encountering an unfamiliar auth flow SHOULD fetch `Auth-Docs` before failing. The documentation at that URL is site-specific and not part of this standard.
+
+### 6.4 Dynamic Client Registration
+
+For OAuth2 capabilities, sites MAY provide a `Registration-Endpoint` that supports [RFC 7591 — OAuth 2.0 Dynamic Client Registration](https://www.rfc-editor.org/rfc/rfc7591). This allows agents to self-provision credentials without out-of-band setup.
+
+```
+Capability: api
+  Endpoint: https://example.com/api/v1
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://example.com/oauth/token
+  Registration-Endpoint: https://example.com/oauth/register
+  Scopes: read, write
+```
+
+**Agent flow:**
+1. `POST` to `Registration-Endpoint` with client metadata (per RFC 7591).
+2. Receive `client_id` and `client_secret` in the response.
+3. Use these credentials at `Auth-Endpoint` (OAuth2 client credentials flow) to obtain an access token.
+4. Send `Authorization: Bearer {access_token}` on capability requests.
+
+This field is OPTIONAL. Sites that require manual credential provisioning (developer portal, partnerships, etc.) can omit it — agents fall back to the out-of-band flow described in section 6.1.
 
 ## 7. Rate Limiting
 
@@ -592,3 +628,4 @@ Agent: *
 - [robots.txt — RFC 9309](https://www.rfc-editor.org/rfc/rfc9309)
 - [Model Context Protocol](https://modelcontextprotocol.io)
 - [Agent-to-Agent Protocol](https://google.github.io/A2A/)
+- [RFC 7591 — OAuth 2.0 Dynamic Client Registration](https://www.rfc-editor.org/rfc/rfc7591)

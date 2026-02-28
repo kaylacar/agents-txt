@@ -1,0 +1,55 @@
+{
+  "specVersion": "1.0",
+  "site": {
+    "name": "My Blog",
+    "url": "https://example.com",
+    "description": "A personal blog about technology and design",
+    "contact": "author@example.com"
+  },
+  "capabilities": [
+    {
+      "id": "search-posts",
+      "endpoint": "https://example.com/api/search",
+      "method": "GET",
+      "protocol": "REST",
+      "auth": { "type": "none" },
+      "rateLimit": { "requests": 30, "window": "minute" },
+      "description": "Search blog posts by keyword",
+      "parameters": [
+        { "name": "q", "in": "query", "type": "string", "required": true, "description": "Search query" }
+      ]
+    },
+    {
+      "id": "browse-posts",
+      "endpoint": "https://example.com/api/posts",
+      "method": "GET",
+      "protocol": "REST",
+      "auth": { "type": "none" },
+      "rateLimit": { "requests": 60, "window": "minute" },
+      "description": "Browse recent posts with pagination",
+      "parameters": [
+        { "name": "page", "in": "query", "type": "integer", "description": "Page number" },
+        { "name": "tag", "in": "query", "type": "string", "description": "Filter by tag" }
+      ]
+    },
+    {
+      "id": "contact",
+      "endpoint": "https://example.com/api/contact",
+      "method": "POST",
+      "protocol": "REST",
+      "auth": { "type": "none" },
+      "rateLimit": { "requests": 3, "window": "minute" },
+      "description": "Send a message to the author"
+    }
+  ],
+  "access": {
+    "allow": ["/api/*"],
+    "disallow": ["/admin/*", "/drafts/*"]
+  },
+  "agents": {
+    "*": {
+      "rateLimit": { "requests": 30, "window": "minute" },
+      "capabilities": ["search-posts", "browse-posts", "contact"]
+    }
+  }
+}

@@ -138,6 +138,10 @@ export function parse(input: string): ParseResult {
           if (!currentCapability.auth) currentCapability.auth = { type: "none" };
           currentCapability.auth.docsUrl = value;
           break;
+        case "Registration-Endpoint":
+          if (!currentCapability.auth) currentCapability.auth = { type: "oauth2" };
+          currentCapability.auth.registrationEndpoint = value;
+          break;
         case "Scopes":
           if (!currentCapability.auth) currentCapability.auth = { type: "oauth2" };
           currentCapability.auth.scopes = value.split(",").map((s) => s.trim());

@@ -10,9 +10,11 @@ Capability: list-projects
   Endpoint: https://example.com/api/v1/projects
   Method: GET
   Protocol: REST
-  Auth: bearer-token
-  Auth-Endpoint: https://example.com/auth/token
+  Auth: oauth2
+  Auth-Endpoint: https://example.com/oauth/token
+  Registration-Endpoint: https://example.com/oauth/register
   Auth-Docs: https://example.com/docs/auth
+  Scopes: projects:read
   Rate-Limit: 100/minute
   Description: List projects the authenticated user has access to
   Param: status (query, string) — Filter by status (active, archived)
@@ -21,8 +23,10 @@ Capability: search-tasks
   Endpoint: https://example.com/api/v1/tasks/search
   Method: GET
   Protocol: REST
-  Auth: bearer-token
-  Auth-Endpoint: https://example.com/auth/token
+  Auth: oauth2
+  Auth-Endpoint: https://example.com/oauth/token
+  Registration-Endpoint: https://example.com/oauth/register
+  Scopes: tasks:read
   Rate-Limit: 60/minute
   Description: Search tasks across all projects
   Param: q (query, string, required) — Search query
@@ -32,8 +36,10 @@ Capability: create-task
   Endpoint: https://example.com/api/v1/tasks
   Method: POST
   Protocol: REST
-  Auth: bearer-token
-  Auth-Endpoint: https://example.com/auth/token
+  Auth: oauth2
+  Auth-Endpoint: https://example.com/oauth/token
+  Registration-Endpoint: https://example.com/oauth/register
+  Scopes: tasks:write
   Rate-Limit: 30/minute
   Description: Create a new task in a project
 

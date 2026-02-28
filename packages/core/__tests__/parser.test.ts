@@ -315,6 +315,38 @@ Agent: claude
     expect(result.warnings.some((w) => w.message.includes("Unknown agent field"))).toBe(true);
   });
 
+  it("handles Registration-Endpoint field", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  Protocol: REST
+  Auth: oauth2
+  Registration-Endpoint: https://test.com/oauth/register
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.capabilities[0].auth?.registrationEndpoint).toBe("https://test.com/oauth/register");
+  });
+
+  it("defaults auth type to oauth2 when Registration-Endpoint appears without Auth", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: thing
+  Endpoint: https://test.com/api
+  Protocol: REST
+  Registration-Endpoint: https://test.com/oauth/register
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.capabilities[0].auth?.type).toBe("oauth2");
+    expect(result.document!.capabilities[0].auth?.registrationEndpoint).toBe("https://test.com/oauth/register");
+  });
+
   it("handles Auth-Docs field", () => {
     const doc = `
 Site-Name: Test

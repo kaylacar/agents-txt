@@ -59,6 +59,8 @@ This directory includes ready-to-use templates:
 | `agents.txt` | E-commerce store |
 | `agents.json` | Same store, JSON format |
 | `blog.agents.txt` | Blog or content site |
-| `saas.agents.txt` | SaaS product with API |
+| `blog.agents.json` | Same blog, JSON format |
+| `saas.agents.txt` | SaaS product with API (includes OAuth2 dynamic registration) |
+| `saas.agents.json` | Same SaaS, JSON format |
 
 Copy the one closest to your site and edit the values.

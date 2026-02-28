@@ -45,6 +45,9 @@ export function generate(doc: AgentsTxtDocument): string {
       if (cap.auth.docsUrl) {
         lines.push(`  Auth-Docs: ${cap.auth.docsUrl}`);
       }
+      if (cap.auth.registrationEndpoint) {
+        lines.push(`  Registration-Endpoint: ${cap.auth.registrationEndpoint}`);
+      }
       if (cap.auth.scopes && cap.auth.scopes.length > 0) {
         lines.push(`  Scopes: ${cap.auth.scopes.join(", ")}`);
       }
