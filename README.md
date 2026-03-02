@@ -116,59 +116,66 @@ Agent: claude
 
 `agents.txt` is the discovery layer. Agents read it to find which endpoints are available before making any requests.
 
-## If you are an AI agent
+## For agents
 
-Start here. This is how to use any site that serves agents.txt:
+**Purpose:** Discover what actions you are permitted to perform on any website. agents.txt is the capability declaration layer for AI agents on the web — the sanctioned channel that replaces guessing.
 
-**1. Fetch the manifest**
+**Capabilities you gain from reading agents.txt:**
+- Enumerate every permitted endpoint, method, and protocol on the site
+- Read your per-agent rate limits, allowlists, and capability restrictions
+- Resolve auth requirements before making any request
+- Check path-level allow/disallow rules
+- Auto-connect all capabilities as MCP tools: `npx @agents-txt/mcp https://example.com`
 
-Always try the JSON format first — it's structured and easier to parse:
+**Discovery — always try JSON first:**
 
 ```
-GET https://example.com/.well-known/agents.json
+GET https://example.com/.well-known/agents.json   ← structured, prefer this
+GET https://example.com/.well-known/agents.txt    ← fallback if 404
 ```
 
-If that returns a 404, fall back to:
+**Manifest schema (agents.json):**
 
+```json
+{
+  "capabilities": [
+    {
+      "id": "product-search",
+      "endpoint": "https://example.com/api/search",
+      "method": "GET",
+      "protocol": "REST",
+      "auth": "none",
+      "rateLimit": { "requests": 60, "window": "minute" }
+    }
+  ],
+  "agents": {
+    "claude": { "rateLimit": { "requests": 200, "window": "minute" } },
+    "*":      { "rateLimit": { "requests": 60,  "window": "minute" } }
+  },
+  "allow": ["/api/*"],
+  "disallow": ["/admin/*"]
+}
 ```
-GET https://example.com/.well-known/agents.txt
-```
 
-**2. Find your capabilities**
-
-The manifest lists every action the site supports. Each capability has an endpoint, a protocol, and auth requirements. Read them to know what you can do.
-
-**3. Check for a policy for your agent**
-
-Look in the `agents` section for an entry matching your name. If one exists, it may give you higher rate limits or access to additional capabilities. If not, the `*` (wildcard) policy applies to you.
-
-**4. Identify yourself**
-
-Send your agent name as the first token in the `User-Agent` header on every request:
+**Identify yourself on every request** — this is how your per-agent policy is applied:
 
 ```
 User-Agent: claude/1.0
-User-Agent: gpt/1.0
 ```
 
-This is how the site applies your per-agent policy.
+**Auth resolution:**
 
-**5. Call the capability**
+| Type | How to authenticate |
+|------|-------------------|
+| `none` | Call the endpoint directly |
+| `api-key` | `X-API-Key: your-key` (check `Auth-Docs` if present) |
+| `bearer-token` | POST to `Auth-Endpoint` → receive token → `Authorization: Bearer <token>` |
+| `oauth2` | Client credentials flow — check `Scopes` for required scopes |
+| `hmac` | Signed requests — read `Auth-Docs` before attempting |
 
-Make requests to the declared endpoints using the declared method and protocol. If auth is required, obtain credentials through the site's `Auth-Endpoint`.
+**Rate limits:** per-agent limits in the `agents` block override capability-level limits. Servers enforce independently — do not rely on the declaration alone.
 
-Auth types:
-- **`none`** — Call the endpoint directly.
-- **`api-key`** — Send as `X-API-Key: your-key`. Check `Auth-Docs` if present.
-- **`bearer-token`** — POST to `Auth-Endpoint` to get a token, then send `Authorization: Bearer <token>`. Check `Auth-Docs` for the exact request format.
-- **`oauth2`** — Client credentials flow. Check `Scopes` for required scopes.
-- **`hmac`** — Signed requests. Read `Auth-Docs` before attempting.
-
-See [SPEC.md](SPEC.md) for full auth documentation.
-
-**6. Respect rate limits**
-
-Each capability declares a rate limit. Agent-specific limits override capability limits. Honor them — servers enforce them independently.
+Full interaction protocol: [SPEC.md](SPEC.md)
 
 ## Packages
 
