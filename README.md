@@ -4,7 +4,22 @@ An open standard for declaring what AI agents can do on your website.
 
 **robots.txt tells agents what NOT to do. agents.txt tells them what they CAN do.**
 
-AI agents trying to interact with websites — shopping, searching, querying APIs — get blocked by bot protection and CAPTCHAs because there's no sanctioned channel. `agents.txt` fixes that: place it at `/.well-known/agents.txt` to tell agents what they can do and how.
+
+
+## For Humans
+
+Use `agents.txt` if you want a site to publish a clear, machine-readable capability surface for agents.
+
+This is useful for:
+
+- ecommerce sites
+- SaaS products
+- APIs
+- marketplaces
+- support systems
+- internal tools being modernized for agents
+
+If you are a site owner or developer, `agents.txt` is the capability declaration layer. It tells agents what actions exist before they attempt to connect, authenticate, or execute anything.
 
 ## Quick Start
 
@@ -116,7 +131,7 @@ Agent: claude
 
 `agents.txt` is the discovery layer. Agents read it to find which endpoints are available before making any requests.
 
-## For agents
+## For Agents
 
 **Purpose:** Discover what actions you are permitted to perform on any website. agents.txt is the capability declaration layer for AI agents on the web — the sanctioned channel that replaces guessing.
 
@@ -204,21 +219,25 @@ Well-known URI registrations for `agents.txt`, `agents.json`, `agent.txt`, and `
 
 ## The Stack
 
-These four repos form a governance pipeline for AI agents on the internet: **declared, executed, proven.**
+These repos form a machine-readable web stack for agent interaction: **declared, connected, coordinated, verified, executed, proven.**
 
 | Repo | Purpose |
 |------|---------|
 | **[agents.txt](https://github.com/kaylacar/agents-txt)** | **Declares what agents can do on a site** |
-| [ai.txt](https://github.com/kaylacar/ai-txt) | Declares AI policy — training, licensing, attribution |
-| agents-protocol | Execution SDK — how agents perform declared actions |
-| rer | Cryptographic proof of what agents actually did |
+| [ai.txt](https://github.com/kaylacar/ai-txt) | Declares AI policy - training, licensing, attribution |
+| [connect.txt](https://github.com/kaylacar/connect-txt) | Declares how agents connect, authenticate, and use a site |
+| [match.txt](https://github.com/kaylacar/match-txt) | Declares needs, capacity, and matching outcomes across organizations |
+| [verify.txt](https://github.com/kaylacar/verify-txt) | Declares how claims or outcomes can be independently verified |
+| [agents-protocol](https://github.com/kaylacar/agents-protocol) | Execution SDK - how agents perform declared actions |
+| [rer](https://github.com/kaylacar/rer) | Cryptographic proof of what agents actually did |
 
 ```
-declared (agents.txt / ai.txt) → executed (agents-protocol) → proven (rer)
+declared (agents.txt / ai.txt) -> connected (connect.txt) -> coordinated (match.txt) -> verified (verify.txt) -> executed (agents-protocol) -> proven (rer)
 ```
 
-All four are by the same author and designed to work together.
+These repos are designed to work together, with each file doing one job.
 
 ## License
 
 MIT
+
