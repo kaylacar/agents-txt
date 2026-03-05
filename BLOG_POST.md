@@ -1,4 +1,4 @@
-# agents.txt — a robots.txt for what AI agents can DO
+# agents.txt - a robots.txt for what AI agents can DO
 
 **TL;DR:** We're proposing `agents.txt` as an open web standard for capability declaration. robots.txt says "don't crawl this." agents.txt says "here's what you *can* do, and exactly how." IANA well-known URI registrations are pending.
 
@@ -6,7 +6,7 @@
 
 ## The problem nobody is naming clearly
 
-AI agents are being deployed to interact with websites on behalf of users — shopping, searching, booking, querying. The problem is that websites have no sanctioned way to say: "agents are welcome here, and here's the interface."
+AI agents are being deployed to interact with websites on behalf of users - shopping, searching, booking, querying. The problem is that websites have no sanctioned way to say: "agents are welcome here, and here's the interface."
 
 The result is a mess:
 - Agents scrape HTML because there's no declared API
@@ -24,7 +24,7 @@ We have standards for everything else:
 | `AGENTS.md` | "Instructions for coding agents" (dev tooling) |
 | **`agents.txt`** | **"Here's what you can DO, and how"** (capability declaration) |
 
-agents.txt sits above MCP and A2A — it's the discovery layer that tells agents which protocols and endpoints are available, whether a session is required, and what the rate limits are.
+agents.txt sits above MCP and A2A - it's the discovery layer that tells agents which protocols and endpoints are available, whether a session is required, and what the rate limits are.
 
 ---
 
@@ -33,7 +33,7 @@ agents.txt sits above MCP and A2A — it's the discovery layer that tells agents
 Place this at `/.well-known/agents.txt`:
 
 ```
-# agents.txt — AI Agent Capability Declaration
+# agents.txt - AI Agent Capability Declaration
 # Spec-Version: 1.0
 
 Site-Name: My Store
@@ -72,7 +72,7 @@ Machine-readable version lives at `/.well-known/agents.json` for agents that don
 
 ## How adoption works
 
-**For site owners — one line:**
+**For site owners - one line:**
 
 ```bash
 npm install @agents-txt/express
@@ -89,7 +89,7 @@ app.use(agentsTxt({
 
 That's it. Your site now serves both `agents.txt` and `agents.json`.
 
-**For agents reading the file — also one line:**
+**For agents reading the file - also one line:**
 
 ```bash
 npx @agents-txt/mcp https://mystore.com
@@ -112,7 +112,7 @@ if (result.success) {
 
 ## The full-stack reference implementation
 
-For site owners who want more than a declaration file — typed handlers, session management, and a cryptographic audit trail — [agents-protocol](https://github.com/kaylacar/agents-protocol) is a TypeScript SDK built on this standard:
+For site owners who want more than a declaration file - typed handlers, session management, and a cryptographic audit trail - [agents-protocol](https://github.com/kaylacar/agents-protocol) is a TypeScript SDK built on this standard:
 
 ```typescript
 import { AgentDoor, search, cart, checkout } from '@agents-protocol/sdk';
@@ -141,7 +141,7 @@ await client.connect();
 const results = await client.search('blue mug');
 await client.cartAdd(results[0].id, 1);
 const { checkout_url } = await client.checkout();
-// hand URL to human — agent stops here, never touches payment
+// hand URL to human - agent stops here, never touches payment
 ```
 
 The human handoff pattern is intentional. Agents should never complete irreversible financial actions autonomously. The `checkout_url` goes to the user; the agent stops.
@@ -162,7 +162,7 @@ The full spec is at [SPEC.md](https://github.com/kaylacar/agents-txt/blob/master
 
 ## Why now
 
-The AI agent ecosystem is fragmenting fast. Every AI company is building their own site-integration protocol. MCP is great but it's a transport layer, not a discovery layer — you still need to tell agents where to find the MCP server. A2A defines how agents talk to each other, but not how they discover what a website offers.
+The AI agent ecosystem is fragmenting fast. Every AI company is building their own site-integration protocol. MCP is great but it's a transport layer, not a discovery layer - you still need to tell agents where to find the MCP server. A2A defines how agents talk to each other, but not how they discover what a website offers.
 
 agents.txt fills the gap at the discovery layer. Any protocol (MCP, REST, GraphQL, A2A) can be declared in agents.txt. The file is the index; whatever is indexed can use any wire format underneath.
 

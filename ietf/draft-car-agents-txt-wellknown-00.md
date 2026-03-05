@@ -443,9 +443,9 @@ Capability: product-search
   Auth: none
   Rate-Limit: 60/minute
   Description: Search the product catalog
-  Param: q (query, string, required) — Search query
-  Param: limit (query, integer) — Max results, default 20
-  Param: category (query, string) — Filter by category
+  Param: q (query, string, required) - Search query
+  Param: limit (query, integer) - Max results, default 20
+  Param: category (query, string) - Filter by category
 
 Capability: store-assistant
   Endpoint: https://outdoorsupply.example/mcp

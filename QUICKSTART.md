@@ -1,17 +1,17 @@
 # Add agents.txt to Your Site in 5 Minutes
 
-Your website has a front door for humans. `agents.txt` gives it a second door for AI agents — a machine-readable file that tells agents what they can do on your site, which endpoints to call, and how to behave.
+Your website has a front door for humans. `agents.txt` gives it a second door for AI agents - a machine-readable file that tells agents what they can do on your site, which endpoints to call, and how to behave.
 
 No SDK. No code. Just a file.
 
 ---
 
-## Step 1 — Create the file
+## Step 1 - Create the file
 
 Use the [generator](examples/generator/index.html) or copy this template and edit it:
 
 ```
-# agents.txt — AI Agent Capability Declaration
+# agents.txt - AI Agent Capability Declaration
 Spec-Version: 1.0
 
 Site-Name: My Store
@@ -41,7 +41,7 @@ See [examples/static-site/](examples/static-site/) for ready-to-copy templates f
 
 ---
 
-## Step 2 — Upload it
+## Step 2 - Upload it
 
 Place the file at `/.well-known/agents.txt` on your site. Here's how for common hosts:
 
@@ -82,7 +82,7 @@ Upload with the key `.well-known/agents.txt` and set Content-Type to `text/plain
 
 ---
 
-## Step 3 — Test it
+## Step 3 - Test it
 
 ```bash
 curl https://yoursite.com/.well-known/agents.txt
@@ -94,7 +94,7 @@ If you see your file, it works. AI agents can now discover your site.
 
 ## Optional: Add the JSON version
 
-Agents prefer `agents.json` — it's structured and easier to parse. Place it alongside the text file:
+Agents prefer `agents.json` - it's structured and easier to parse. Place it alongside the text file:
 
 ```
 .well-known/
@@ -113,7 +113,7 @@ Once your file is live:
 1. AI agents that support agents.txt will discover your site automatically
 2. They'll read your capabilities and know exactly what they can do
 3. They'll respect your rate limits and access rules
-4. No scraping, no CAPTCHA battles, no guessing — just a clean machine-readable path
+4. No scraping, no CAPTCHA battles, no guessing - just a clean machine-readable path
 
 ---
 
@@ -130,7 +130,7 @@ Once your file is live:
 
 ## The idea
 
-The web was built for humans. Every frontend — navigation, buttons, checkout flows — is a translation layer between a human and data. AI agents don't need that translation. They need the data directly, with clear rules.
+The web was built for humans. Every frontend - navigation, buttons, checkout flows - is a translation layer between a human and data. AI agents don't need that translation. They need the data directly, with clear rules.
 
 `agents.txt` is the agent door. Same site, same data, second door.
 

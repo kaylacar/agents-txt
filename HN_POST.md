@@ -1,6 +1,6 @@
-# Show HN: agents.txt and ai.txt — open standards for AI agent interaction
+# Show HN: agents.txt and ai.txt - open standards for AI agent interaction
 
-**Title:** Show HN: agents.txt and ai.txt – open standards for what AI agents can do and what's allowed
+**Title:** Show HN: agents.txt and ai.txt - open standards for what AI agents can do and what's allowed
 
 ---
 
@@ -8,7 +8,7 @@
 
 We built two complementary open standards for AI agent interaction with websites, and we're releasing them today.
 
-**agents.txt** — a capability declaration file. Place it at `/.well-known/agents.txt` to tell AI agents what they can do on your site:
+**agents.txt** - a capability declaration file. Place it at `/.well-known/agents.txt` to tell AI agents what they can do on your site:
 
 ```
 Capability: product-search
@@ -21,7 +21,7 @@ Agent: claude
   Rate-Limit: 200/minute
 ```
 
-**ai.txt** — a policy declaration file. Place it at `/.well-known/ai.txt` to declare training rights and licensing:
+**ai.txt** - a policy declaration file. Place it at `/.well-known/ai.txt` to declare training rights and licensing:
 
 ```
 Training: conditional
@@ -57,14 +57,14 @@ Both specs are filed with IANA for well-known URI registration (pending review).
 
 The reference SDK (agents-protocol) adds session management, audit artifacts, and a typed client: https://github.com/kaylacar/agents-protocol
 
-Happy to answer questions about the design decisions — why these are separate from robots.txt, how agent name matching works, the IANA process, etc.
+Happy to answer questions about the design decisions - why these are separate from robots.txt, how agent name matching works, the IANA process, etc.
 
 ---
 
 ## Notes for posting
 
-- Post Tuesday 9–11am ET for best traction
-- Title character limit is ~80 — current title is fine
+- Post Tuesday 9-11am ET for best traction
+- Title character limit is ~80 - current title is fine
 - Fill in [URL] with the live Render URL before posting
 - Tag: "Show HN" prefix handles categorization
-- First comment: post a brief "why now" — the shift is that agents are starting to act autonomously at scale, and there's a 6-month window to establish norms before every major platform rolls their own incompatible format
+- First comment: post a brief "why now" - the shift is that agents are starting to act autonomously at scale, and there's a 6-month window to establish norms before every major platform rolls their own incompatible format

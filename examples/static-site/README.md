@@ -1,6 +1,6 @@
 # Static Site Example
 
-Add agents.txt to any website — no code, no dependencies, no server changes.
+Add agents.txt to any website - no code, no dependencies, no server changes.
 
 ## Setup
 

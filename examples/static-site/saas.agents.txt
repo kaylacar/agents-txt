@@ -1,4 +1,4 @@
-# agents.txt — AI Agent Capability Declaration
+# agents.txt - AI Agent Capability Declaration
 Spec-Version: 1.0
 
 Site-Name: My SaaS
@@ -15,7 +15,7 @@ Capability: list-projects
   Auth-Docs: https://example.com/docs/auth
   Rate-Limit: 100/minute
   Description: List projects the authenticated user has access to
-  Param: status (query, string) — Filter by status (active, archived)
+  Param: status (query, string) - Filter by status (active, archived)
 
 Capability: search-tasks
   Endpoint: https://example.com/api/v1/tasks/search
@@ -25,8 +25,8 @@ Capability: search-tasks
   Auth-Endpoint: https://example.com/auth/token
   Rate-Limit: 60/minute
   Description: Search tasks across all projects
-  Param: q (query, string, required) — Search query
-  Param: project_id (query, string) — Filter by project
+  Param: q (query, string, required) - Search query
+  Param: project_id (query, string) - Filter by project
 
 Capability: create-task
   Endpoint: https://example.com/api/v1/tasks

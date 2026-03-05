@@ -84,7 +84,7 @@ describe("agentsTxt middleware", () => {
       capabilities: [],
       corsOrigins: ["https://allowed.com"],
     });
-    // No origin header — should not get ACAO
+    // No origin header - should not get ACAO
     const res = await request(app, "/.well-known/agents.txt");
     expect(res.headers.get("access-control-allow-origin")).toBeNull();
   });

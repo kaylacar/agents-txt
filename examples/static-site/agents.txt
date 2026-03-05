@@ -1,4 +1,4 @@
-# agents.txt — AI Agent Capability Declaration
+# agents.txt - AI Agent Capability Declaration
 Spec-Version: 1.0
 
 Site-Name: My Store
@@ -13,8 +13,8 @@ Capability: product-search
   Auth: none
   Rate-Limit: 60/minute
   Description: Search the product catalog by keyword
-  Param: q (query, string, required) — Search query
-  Param: limit (query, integer) — Max results, default 20
+  Param: q (query, string, required) - Search query
+  Param: limit (query, integer) - Max results, default 20
 
 Capability: browse-products
   Endpoint: https://example.com/api/products
@@ -23,9 +23,9 @@ Capability: browse-products
   Auth: none
   Rate-Limit: 120/minute
   Description: Browse all products with pagination
-  Param: page (query, integer) — Page number, default 1
-  Param: limit (query, integer) — Items per page, default 20
-  Param: category (query, string) — Filter by category
+  Param: page (query, integer) - Page number, default 1
+  Param: limit (query, integer) - Items per page, default 20
+  Param: category (query, string) - Filter by category
 
 Capability: contact
   Endpoint: https://example.com/api/contact

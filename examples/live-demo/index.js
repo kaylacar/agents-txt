@@ -4,7 +4,7 @@ import { aiTxt } from "@ai-txt/express";
 
 const app = express();
 
-// agents.txt — what AI agents can DO on this site
+// agents.txt - what AI agents can DO on this site
 app.use(
   agentsTxt({
     site: {
@@ -34,7 +34,7 @@ app.use(
   })
 );
 
-// ai.txt — policy for training, scraping, and licensing
+// ai.txt - policy for training, scraping, and licensing
 app.use(
   aiTxt({
     site: {
@@ -91,15 +91,15 @@ app.get("/", (_req, res) => {
 <h2><span class="tag tag-blue">agents.txt</span> What agents can <em>do</em> here</h2>
 <p>Declares available capabilities, endpoints, auth, and rate limits.</p>
 <ul>
-  <li><a href="/.well-known/agents.json">/.well-known/agents.json</a> — machine-readable</li>
-  <li><a href="/.well-known/agents.txt">/.well-known/agents.txt</a> — human-readable</li>
+  <li><a href="/.well-known/agents.json">/.well-known/agents.json</a> - machine-readable</li>
+  <li><a href="/.well-known/agents.txt">/.well-known/agents.txt</a> - human-readable</li>
 </ul>
 
 <h2><span class="tag tag-green">ai.txt</span> What's <em>allowed</em> and under what terms</h2>
 <p>Declares training policy, licensing, and per-agent rules.</p>
 <ul>
-  <li><a href="/.well-known/ai.json">/.well-known/ai.json</a> — machine-readable</li>
-  <li><a href="/.well-known/ai.txt">/.well-known/ai.txt</a> — human-readable</li>
+  <li><a href="/.well-known/ai.json">/.well-known/ai.json</a> - machine-readable</li>
+  <li><a href="/.well-known/ai.txt">/.well-known/ai.txt</a> - human-readable</li>
 </ul>
 
 <h2>Policy summary</h2>

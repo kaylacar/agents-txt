@@ -48,7 +48,7 @@ format.
 
 The submission triggers an expert review process. A designated
 reviewer will evaluate whether the specification is sufficiently
-stable and the use case is legitimate. This is not a vote — it is
+stable and the use case is legitimate. This is not a vote - it is
 a review for basic completeness and non-conflict with existing URIs.
 
 To strengthen the submission:
