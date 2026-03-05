@@ -8,6 +8,7 @@ import type {
   ParseWarning,
   Protocol,
   AuthType,
+  DeclarationType,
   RateLimitWindow,
 } from "./types.js";
 import { parseRateLimit } from "./utils.js";
@@ -16,6 +17,7 @@ type ParserState = "TOP_LEVEL" | "IN_CAPABILITY" | "IN_AGENT";
 
 const VALID_PROTOCOLS = new Set(["REST", "MCP", "A2A", "GraphQL", "WebSocket"]);
 const VALID_AUTH_TYPES = new Set(["none", "api-key", "bearer-token", "oauth2", "hmac"]);
+const VALID_DECLARATION_TYPES = new Set(["platform", "agent"]);
 
 /**
  * Parse an agents.txt text document into a structured AgentsTxtDocument.
@@ -28,6 +30,8 @@ export function parse(input: string): ParseResult {
   // Collected data
   let specVersion = "1.0";
   let generatedAt: string | undefined;
+  let declarationType: DeclarationType | undefined;
+  const operatesOn: string[] = [];
   const site: Record<string, string> = {};
   const capabilities: Capability[] = [];
   const allowPaths: string[] = [];
@@ -168,13 +172,16 @@ export function parse(input: string): ParseResult {
         case "Capabilities":
           currentAgentPolicy.capabilities = value.split(",").map((s) => s.trim());
           break;
+        case "Agent-Declaration":
+          currentAgentPolicy.agentDeclaration = value;
+          break;
         default:
           warnings.push({ line: lineNum, message: `Unknown agent field: ${key}` });
       }
       continue;
     }
 
-    // Non-indented line — flush any open block
+    // Non-indented line - flush any open block
     if (state === "IN_CAPABILITY") { flushCapability(); state = "TOP_LEVEL"; }
     if (state === "IN_AGENT") { flushAgent(); state = "TOP_LEVEL"; }
 
@@ -197,6 +204,14 @@ export function parse(input: string): ParseResult {
       case "Site-Contact": site.contact = value; break;
       case "Privacy-Policy":
       case "Site-Privacy-Policy": site.privacyPolicy = value; break;
+      case "Declaration-Type":
+        if (VALID_DECLARATION_TYPES.has(value)) {
+          declarationType = value as DeclarationType;
+        } else {
+          warnings.push({ line: lineNum, field: "Declaration-Type", message: `Unknown declaration type: ${value}` });
+        }
+        break;
+      case "Operates-On": operatesOn.push(value); break;
       case "Allow": allowPaths.push(value); break;
       case "Disallow": disallowPaths.push(value); break;
       case "Agents-JSON": metadata["Agents-JSON"] = value; break;
@@ -230,6 +245,8 @@ export function parse(input: string): ParseResult {
   const document: AgentsTxtDocument = {
     specVersion,
     generatedAt,
+    declarationType,
+    operatesOn: operatesOn.length > 0 ? operatesOn : undefined,
     site: {
       name: site.name!,
       url: site.url!,
@@ -250,12 +267,12 @@ export function parse(input: string): ParseResult {
 }
 
 /**
- * Parse a Param value like: `q (query, string, required) — Search query`
+ * Parse a Param value like: `q (query, string, required) - Search query`
  */
 function parseParam(value: string): ParameterDef | null {
-  // Format: name (location, type[, required]) [— description]
+  // Format: name (location, type[, required]) [- description]
   const match = value.match(
-    /^(\w+)\s*\(\s*(\w+)\s*,\s*(\w+)(?:\s*,\s*(required))?\s*\)(?:\s*—\s*(.+))?$/,
+    /^(\w+)\s*\(\s*(\w+)\s*,\s*(\w+)(?:\s*,\s*(required))?\s*\)(?:\s*-\s*(.+))?$/,
   );
   if (!match) return null;
 

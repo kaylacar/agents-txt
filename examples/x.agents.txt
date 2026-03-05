@@ -1,0 +1,272 @@
+# agents.txt - X (formerly Twitter)
+# Reference implementation showing how X could declare agent capabilities.
+# This is not an official X file. It maps X's v2 API surface to the agents.txt spec.
+#
+# If published at: https://x.com/.well-known/agents.txt
+#
+# Spec: https://github.com/kaylacar/agents-txt
+
+Spec-Version: 1.0
+Declaration-Type: platform
+Agents-JSON: https://x.com/.well-known/agents.json
+
+Site-Name: X
+Site-URL: https://x.com
+Site-Description: Public conversation platform - agent capabilities for the X API v2
+Site-Contact: api-support@x.com
+Site-Privacy-Policy: https://x.com/en/privacy
+Site-Terms: https://developer.x.com/en/developer-terms/agreement-and-policy
+
+# --- Reading ------------------------------------------------------------------
+
+Capability: search-recent
+  Endpoint: https://api.x.com/2/tweets/search/recent
+  Method: GET
+  Protocol: REST
+  Auth: bearer-token
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Auth-Docs: https://developer.x.com/en/docs/authentication/oauth-2-0
+  Rate-Limit: 180/minute
+  Scopes: tweet.read,users.read
+  Description: Search posts from the last 7 days by keyword, hashtag, user mention, or operator query
+  Param: query (query, string, required) - Search query using X query language operators
+  Param: max_results (query, integer) - Results per page, 10-100, default 10
+  Param: next_token (query, string) - Pagination cursor from previous response
+  Param: start_time (query, string) - Earliest post timestamp (ISO 8601)
+  Param: end_time (query, string) - Latest post timestamp (ISO 8601)
+  OpenAPI: https://api.x.com/2/openapi.json
+
+Capability: get-tweet
+  Endpoint: https://api.x.com/2/tweets/:id
+  Method: GET
+  Protocol: REST
+  Auth: bearer-token
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 300/minute
+  Scopes: tweet.read,users.read
+  Description: Retrieve a single post by ID with optional expansions (author, media, referenced tweets)
+  Param: id (path, string, required) - Post ID
+
+Capability: get-user-by-username
+  Endpoint: https://api.x.com/2/users/by/username/:username
+  Method: GET
+  Protocol: REST
+  Auth: bearer-token
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 300/minute
+  Scopes: users.read
+  Description: Look up a user's public profile by username
+  Param: username (path, string, required) - Username without the @ symbol
+
+Capability: get-user-timeline
+  Endpoint: https://api.x.com/2/users/:id/tweets
+  Method: GET
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 180/minute
+  Scopes: tweet.read,users.read
+  Description: Retrieve a user's recent posts in reverse chronological order
+  Param: id (path, string, required) - User ID
+  Param: max_results (query, integer) - Results per page, 5-100, default 10
+  Param: pagination_token (query, string) - Pagination cursor
+
+Capability: get-mentions
+  Endpoint: https://api.x.com/2/users/:id/mentions
+  Method: GET
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 180/minute
+  Scopes: tweet.read,users.read
+  Description: Retrieve posts mentioning a user
+  Param: id (path, string, required) - User ID
+  Param: max_results (query, integer) - Results per page, 5-100
+  Param: pagination_token (query, string) - Pagination cursor
+
+Capability: get-likes
+  Endpoint: https://api.x.com/2/users/:id/liked_tweets
+  Method: GET
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 75/minute
+  Scopes: tweet.read,users.read,like.read
+  Description: Retrieve posts liked by a user
+  Param: id (path, string, required) - User ID
+  Param: max_results (query, integer) - Results per page, 10-100
+
+Capability: get-bookmarks
+  Endpoint: https://api.x.com/2/users/:id/bookmarks
+  Method: GET
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 180/minute
+  Scopes: bookmark.read
+  Description: Retrieve the authenticated user's bookmarked posts
+  Param: id (path, string, required) - User ID (must be authenticated user)
+  Param: max_results (query, integer) - Results per page, 1-100
+
+# --- Writing ------------------------------------------------------------------
+
+Capability: post-tweet
+  Endpoint: https://api.x.com/2/tweets
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Auth-Docs: https://developer.x.com/en/docs/twitter-api/tweets/manage-tweets/api-reference/post-tweets
+  Rate-Limit: 200/minute
+  Scopes: tweet.write,users.read
+  Description: Post a new tweet. Supports text, polls, and reply threading.
+  Param: text (body, string, required) - Post text, max 280 characters
+
+Capability: reply-to-tweet
+  Endpoint: https://api.x.com/2/tweets
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 200/minute
+  Scopes: tweet.write,users.read
+  Description: Reply to an existing post. Include reply.in_reply_to_tweet_id in body.
+  Param: text (body, string, required) - Reply text
+  Param: reply.in_reply_to_tweet_id (body, string, required) - ID of post being replied to
+
+Capability: delete-tweet
+  Endpoint: https://api.x.com/2/tweets/:id
+  Method: DELETE
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 50/minute
+  Scopes: tweet.write,users.read
+  Description: Delete a post authored by the authenticated user
+  Param: id (path, string, required) - Post ID to delete
+
+Capability: like-tweet
+  Endpoint: https://api.x.com/2/users/:id/likes
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 50/minute
+  Scopes: tweet.read,like.write,users.read
+  Description: Like a post on behalf of the authenticated user
+  Param: id (path, string, required) - User ID of liker
+  Param: tweet_id (body, string, required) - ID of post to like
+
+Capability: retweet
+  Endpoint: https://api.x.com/2/users/:id/retweets
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 50/minute
+  Scopes: tweet.write,users.read
+  Description: Retweet a post on behalf of the authenticated user
+  Param: id (path, string, required) - User ID
+  Param: tweet_id (body, string, required) - ID of post to retweet
+
+Capability: bookmark-tweet
+  Endpoint: https://api.x.com/2/users/:id/bookmarks
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 50/minute
+  Scopes: bookmark.write
+  Description: Bookmark a post for the authenticated user
+  Param: id (path, string, required) - User ID
+  Param: tweet_id (body, string, required) - ID of post to bookmark
+
+Capability: follow-user
+  Endpoint: https://api.x.com/2/users/:id/following
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 5/minute
+  Scopes: users.read,follows.write
+  Description: Follow a user on behalf of the authenticated user
+  Param: id (path, string, required) - Source user ID
+  Param: target_user_id (body, string, required) - User ID to follow
+
+Capability: send-dm
+  Endpoint: https://api.x.com/2/dm_conversations/with/:participant_id/messages
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 5/minute
+  Scopes: dm.write
+  Description: Send a direct message to a user. DM must be in an existing conversation or allowed by receiver's settings.
+  Param: participant_id (path, string, required) - Recipient user ID
+  Param: text (body, string, required) - Message text
+
+# --- Streaming ----------------------------------------------------------------
+
+Capability: filtered-stream
+  Endpoint: https://api.x.com/2/tweets/search/stream
+  Protocol: WebSocket
+  Auth: bearer-token
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Auth-Docs: https://developer.x.com/en/docs/twitter-api/tweets/filtered-stream/introduction
+  Rate-Limit: 50/minute
+  Scopes: tweet.read,users.read
+  Description: Real-time filtered post stream. Add filter rules first via /2/tweets/search/stream/rules. Up to 25 rules on Basic tier, 1000 on Pro.
+
+Capability: sampled-stream
+  Endpoint: https://api.x.com/2/tweets/sample/stream
+  Protocol: WebSocket
+  Auth: bearer-token
+  Auth-Endpoint: https://api.x.com/2/oauth2/token
+  Rate-Limit: 50/minute
+  Scopes: tweet.read,users.read
+  Description: Real-time 1% sample of all public posts. No filtering; use filtered-stream for targeted ingestion.
+
+# --- Access control -----------------------------------------------------------
+
+Allow: /2/tweets/*
+Allow: /2/users/*
+Allow: /2/dm_conversations/*
+Disallow: /2/compliance/*
+Disallow: /2/admin/*
+Disallow: /2/media/upload
+
+# --- Per-agent policies -------------------------------------------------------
+#
+# Tier mapping:
+#   Default (*) -> read-only, conservative limits (equivalent to Free tier)
+#   Named agents -> negotiated access matching their approved use case
+#
+# To be listed as a named agent, register at developer.x.com and apply for
+# Elevated or Pro access. Bot accounts must comply with the Automation Rules:
+# https://help.x.com/en/using-x/automated-account-rules
+
+# Default: any unidentified agent gets read-only search
+Agent: *
+  Rate-Limit: 60/minute
+  Capabilities: search-recent, get-tweet, get-user-by-username
+
+# Customer support bots - reply to mentions, no mass-follow, no DMs without prior contact
+Agent: acme-support-bot
+  Rate-Limit: 300/minute
+  Capabilities: search-recent, get-tweet, get-user-by-username, get-mentions, get-user-timeline, post-tweet, reply-to-tweet, like-tweet
+  Agent-Declaration: https://bot.acme.com/.well-known/agents.txt
+
+# News and media aggregators - high read throughput, post their own content
+Agent: newsbot-wire
+  Rate-Limit: 500/minute
+  Capabilities: search-recent, get-tweet, get-user-by-username, get-user-timeline, get-mentions, post-tweet, filtered-stream, sampled-stream
+
+# Brand monitoring / social listening - high read, no write
+Agent: brandwatch-monitor
+  Rate-Limit: 1000/minute
+  Capabilities: search-recent, get-tweet, get-user-by-username, get-user-timeline, get-mentions, filtered-stream, sampled-stream
+
+# Research agents - academic access, read-only
+Agent: research-agent
+  Rate-Limit: 500/minute
+  Capabilities: search-recent, get-tweet, get-user-by-username, get-user-timeline, get-mentions, get-likes, sampled-stream

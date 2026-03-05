@@ -8,12 +8,28 @@ export function generate(doc: AgentsTxtDocument): string {
   const lines: string[] = [];
 
   // Header
-  lines.push("# agents.txt — AI Agent Capability Declaration");
+  lines.push("# agents.txt - AI Agent Capability Declaration");
   lines.push(`# Spec-Version: ${doc.specVersion}`);
   if (doc.generatedAt) {
     lines.push(`# Generated: ${doc.generatedAt}`);
   }
   lines.push("");
+
+  // Declaration type
+  if (doc.declarationType) {
+    lines.push(`Declaration-Type: ${doc.declarationType}`);
+  }
+
+  // Operates-On (for agent declarations)
+  if (doc.operatesOn) {
+    for (const url of doc.operatesOn) {
+      lines.push(`Operates-On: ${url}`);
+    }
+  }
+
+  if (doc.declarationType || doc.operatesOn) {
+    lines.push("");
+  }
 
   // Site info
   lines.push(`Site-Name: ${sanitizeValue(doc.site.name)}`);
@@ -63,7 +79,7 @@ export function generate(doc: AgentsTxtDocument): string {
         const parts = [param.in, param.type];
         if (param.required) parts.push("required");
         let line = `  Param: ${param.name} (${parts.join(", ")})`;
-        if (param.description) line += ` — ${sanitizeValue(param.description)}`;
+        if (param.description) line += ` - ${sanitizeValue(param.description)}`;
         lines.push(line);
       }
     }
@@ -87,6 +103,9 @@ export function generate(doc: AgentsTxtDocument): string {
     }
     if (policy.capabilities && policy.capabilities.length > 0) {
       lines.push(`  Capabilities: ${policy.capabilities.join(", ")}`);
+    }
+    if (policy.agentDeclaration) {
+      lines.push(`  Agent-Declaration: ${policy.agentDeclaration}`);
     }
   }
   lines.push("");

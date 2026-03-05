@@ -16,6 +16,7 @@ export type { ClientOptions } from "./client.js";
 // Types
 export type {
   AgentsTxtDocument,
+  DeclarationType,
   SiteInfo,
   Capability,
   Protocol,
@@ -37,6 +38,7 @@ export type {
 // Schema
 export {
   AgentsTxtDocumentSchema,
+  DeclarationTypeSchema,
   CapabilitySchema,
   SiteInfoSchema,
   RateLimitSchema,

@@ -6,7 +6,7 @@ Site-Name: My Store
 Site-URL: https://example.com
 `;
 
-const FULL_DOC = `# agents.txt — AI Agent Capability Declaration
+const FULL_DOC = `# agents.txt - AI Agent Capability Declaration
 # Spec-Version: 1.0
 # Generated: 2026-01-01T00:00:00.000Z
 
@@ -151,8 +151,8 @@ Site-URL: https://test.com
 Capability: search
   Endpoint: https://test.com/api/search
   Protocol: REST
-  Param: q (query, string, required) — Search query
-  Param: limit (query, integer) — Max results
+  Param: q (query, string, required) - Search query
+  Param: limit (query, integer) - Max results
   Param: category (query, string)
 `;
     const result = parse(doc);
@@ -204,5 +204,108 @@ Capability: search
     const result = parse(doc);
     expect(result.success).toBe(true);
     expect(result.warnings.some((w) => w.message.includes("Invalid parameter"))).toBe(true);
+  });
+
+  it("parses Declaration-Type field", () => {
+    const doc = `
+Declaration-Type: agent
+Site-Name: Acme Bot
+Site-URL: https://bot.acme.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.declarationType).toBe("agent");
+  });
+
+  it("parses Declaration-Type: platform", () => {
+    const doc = `
+Declaration-Type: platform
+Site-Name: Social Platform
+Site-URL: https://social.example.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.declarationType).toBe("platform");
+  });
+
+  it("warns on unknown Declaration-Type", () => {
+    const doc = `
+Declaration-Type: unknown
+Site-Name: Test
+Site-URL: https://test.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Unknown declaration type"))).toBe(true);
+    expect(result.document!.declarationType).toBeUndefined();
+  });
+
+  it("parses Operates-On fields", () => {
+    const doc = `
+Declaration-Type: agent
+Operates-On: https://x.com
+Operates-On: https://reddit.com
+Site-Name: Acme Bot
+Site-URL: https://bot.acme.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.operatesOn).toEqual(["https://x.com", "https://reddit.com"]);
+  });
+
+  it("omits operatesOn when no Operates-On lines present", () => {
+    const result = parse(MINIMAL_DOC);
+    expect(result.document!.operatesOn).toBeUndefined();
+  });
+
+  it("parses Agent-Declaration in agent blocks", () => {
+    const doc = `
+Site-Name: Social Platform
+Site-URL: https://social.example.com
+
+Agent: acme-bot
+  Rate-Limit: 500/minute
+  Agent-Declaration: https://bot.acme.com/.well-known/agents.txt
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.agents["acme-bot"].agentDeclaration).toBe(
+      "https://bot.acme.com/.well-known/agents.txt",
+    );
+  });
+
+  it("parses full agent declaration document", () => {
+    const doc = `# agents.txt - Agent Operator Declaration
+# Spec-Version: 1.0
+Declaration-Type: agent
+Operates-On: https://x.com
+Operates-On: https://reddit.com
+
+Site-Name: Acme Social Bot
+Site-URL: https://bot.acme.com
+Site-Contact: bot-ops@acme.com
+
+Capability: customer-reply
+  Endpoint: https://api.x.com/2/tweets
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Rate-Limit: 20/minute
+  Description: Reply to customer mentions
+
+Disallow: /2/users/*/following
+Disallow: /2/dm_conversations/*
+
+Agent: *
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    const d = result.document!;
+    expect(d.declarationType).toBe("agent");
+    expect(d.operatesOn).toEqual(["https://x.com", "https://reddit.com"]);
+    expect(d.site.name).toBe("Acme Social Bot");
+    expect(d.capabilities[0].id).toBe("customer-reply");
+    expect(d.access.disallow).toContain("/2/users/*/following");
+    expect(d.access.disallow).toContain("/2/dm_conversations/*");
   });
 });

@@ -85,4 +85,61 @@ describe("roundtrip: generate -> parse", () => {
     expect(result.success).toBe(true);
     expect(result.document).toEqual(testDoc);
   });
+
+  it("text roundtrip preserves Declaration-Type and Operates-On", () => {
+    const agentDoc: AgentsTxtDocument = {
+      ...testDoc,
+      declarationType: "agent",
+      operatesOn: ["https://x.com", "https://reddit.com"],
+    };
+    const text = generate(agentDoc);
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.declarationType).toBe("agent");
+    expect(result.document?.operatesOn).toEqual(["https://x.com", "https://reddit.com"]);
+  });
+
+  it("text roundtrip preserves Agent-Declaration", () => {
+    const doc: AgentsTxtDocument = {
+      ...testDoc,
+      agents: {
+        "*": {},
+        "acme-bot": {
+          rateLimit: { requests: 500, window: "minute" },
+          capabilities: ["search"],
+          agentDeclaration: "https://bot.acme.com/.well-known/agents.txt",
+        },
+      },
+    };
+    const text = generate(doc);
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.agents["acme-bot"].agentDeclaration).toBe(
+      "https://bot.acme.com/.well-known/agents.txt",
+    );
+  });
+
+  it("JSON roundtrip preserves agent declaration fields", () => {
+    const agentDoc: AgentsTxtDocument = {
+      ...testDoc,
+      declarationType: "agent",
+      operatesOn: ["https://x.com"],
+      agents: {
+        "*": {},
+        "acme-bot": {
+          rateLimit: { requests: 500, window: "minute" },
+          capabilities: ["search"],
+          agentDeclaration: "https://bot.acme.com/.well-known/agents.txt",
+        },
+      },
+    };
+    const json = generateJSON(agentDoc);
+    const result = parseJSON(json);
+    expect(result.success).toBe(true);
+    expect(result.document?.declarationType).toBe("agent");
+    expect(result.document?.operatesOn).toEqual(["https://x.com"]);
+    expect(result.document?.agents["acme-bot"].agentDeclaration).toBe(
+      "https://bot.acme.com/.well-known/agents.txt",
+    );
+  });
 });

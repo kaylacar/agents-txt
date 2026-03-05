@@ -58,11 +58,16 @@ export const AccessControlSchema = z.object({
 export const AgentPolicySchema = z.object({
   rateLimit: RateLimitSchema.optional(),
   capabilities: z.array(z.string()).optional(),
+  agentDeclaration: z.string().url().optional(),
 });
+
+export const DeclarationTypeSchema = z.enum(["platform", "agent"]);
 
 export const AgentsTxtDocumentSchema = z.object({
   specVersion: z.string().regex(/^\d+\.\d+$/, "Must be major.minor format"),
   generatedAt: z.string().datetime().optional(),
+  declarationType: DeclarationTypeSchema.optional(),
+  operatesOn: z.array(z.string().url()).optional(),
   site: SiteInfoSchema,
   capabilities: z.array(CapabilitySchema),
   access: AccessControlSchema,

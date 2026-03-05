@@ -14,26 +14,26 @@ Where `robots.txt` tells agents what **not** to do, `agents.txt` tells them what
 
 ### 1.1 Purpose
 
-AI agents increasingly interact with websites — searching, browsing, purchasing, querying APIs. However, they are routinely blocked by bot protection, CAPTCHAs, and rate limiters because there is no sanctioned channel for agent interaction. Simultaneously, site owners have no way to declare "AI agents are welcome here, and here's how to interact with us."
+AI agents increasingly interact with websites - searching, browsing, purchasing, querying APIs. However, they are routinely blocked by bot protection, CAPTCHAs, and rate limiters because there is no sanctioned channel for agent interaction. Simultaneously, site owners have no way to declare "AI agents are welcome here, and here's how to interact with us."
 
 `agents.txt` solves this by providing a machine-readable capability declaration. Site owners opt in, declare their capabilities, and agents discover them automatically.
 
 ### 1.2 Design Principles
 
-1. **Opt-in** — Sites explicitly declare capabilities. No file = no agent access declared.
-2. **Discovery-first** — `agents.txt` is a discovery layer above protocols (REST, MCP, A2A, GraphQL). It tells agents *what's available*, not how to implement the protocol.
-3. **Human-readable** — The text format is readable by developers without tooling.
-4. **Machine-parseable** — Both text and JSON formats are unambiguously parseable.
-5. **Declarative auth** — Describes authentication mechanisms, never contains secrets.
-6. **Advisory rate limits** — Agents SHOULD respect declared limits. Servers MUST enforce them independently.
+1. **Opt-in** - Sites explicitly declare capabilities. No file = no agent access declared.
+2. **Discovery-first** - `agents.txt` is a discovery layer above protocols (REST, MCP, A2A, GraphQL). It tells agents *what's available*, not how to implement the protocol.
+3. **Human-readable** - The text format is readable by developers without tooling.
+4. **Machine-parseable** - Both text and JSON formats are unambiguously parseable.
+5. **Declarative auth** - Describes authentication mechanisms, never contains secrets.
+6. **Advisory rate limits** - Agents SHOULD respect declared limits. Servers MUST enforce them independently.
 
 ### 1.3 Relationship to Other Standards
 
 | Standard | Purpose | Relationship |
 |----------|---------|-------------|
-| `robots.txt` | Deny crawling | Complementary — agents.txt declares what's allowed |
-| `llms.txt` | Content for LLMs to read | Complementary — agents.txt declares actions, not content |
-| `AGENTS.md` | Instructions for coding agents | Different scope — repo-level vs website-level |
+| `robots.txt` | Deny crawling | Complementary - agents.txt declares what's allowed |
+| `llms.txt` | Content for LLMs to read | Complementary - agents.txt declares actions, not content |
+| `AGENTS.md` | Instructions for coding agents | Different scope - repo-level vs website-level |
 | MCP | Model Context Protocol | agents.txt discovers MCP endpoints |
 | A2A | Agent-to-Agent Protocol | agents.txt discovers A2A endpoints |
 | OpenAPI | API specification | agents.txt can reference OpenAPI specs per capability |
@@ -109,6 +109,7 @@ Spec-Version: 1.0
 |-------|----------|-------------|
 | `Spec-Version` | REQUIRED | Specification version (semver). Currently `1.0`. |
 | `Generated-At` | OPTIONAL | ISO 8601 timestamp of generation time. |
+| `Declaration-Type` | OPTIONAL | `platform` (default) or `agent`. See Section 3.8. |
 
 ### 3.3 Site Section
 
@@ -163,17 +164,17 @@ Capability: product-search
 Capability: product-search
   Endpoint: https://example.com/api/search
   Protocol: REST
-  Param: q (query, string, required) — Search query
-  Param: limit (query, integer) — Max results, default 20
-  Param: category (query, string) — Filter by category
+  Param: q (query, string, required) - Search query
+  Param: limit (query, integer) - Max results, default 20
+  Param: category (query, string) - Filter by category
 ```
 
-Parameter format: `name (location, type[, required]) [— description]`
+Parameter format: `name (location, type[, required]) [- description]`
 
 - `location`: One of `query`, `path`, `header`, `body`
 - `type`: One of `string`, `integer`, `number`, `boolean`
 - `required`: If present, the parameter is required
-- Description after `—` is optional
+- Description after `-` is optional
 
 ### 3.5 Access Control
 
@@ -191,7 +192,7 @@ Disallow: /internal/*
 
 Rules follow `robots.txt` semantics: more specific patterns take precedence. If no access control is specified, all paths referenced by capabilities are implicitly allowed.
 
-Capability endpoint declarations take precedence over `Disallow` directives — if a path is declared as a capability endpoint, it is accessible to agents regardless of a matching `Disallow` pattern. `Disallow` restricts general path access, not declared capabilities.
+Capability endpoint declarations take precedence over `Disallow` directives - if a path is declared as a capability endpoint, it is accessible to agents regardless of a matching `Disallow` pattern. `Disallow` restricts general path access, not declared capabilities.
 
 ### 3.6 Agent Blocks
 
@@ -214,6 +215,7 @@ Agent: gpt
 | `Agent` | REQUIRED | Agent identifier. `*` means all agents. |
 | `Rate-Limit` | OPTIONAL | Override rate limit for this agent. |
 | `Capabilities` | OPTIONAL | Comma-separated list of allowed capability IDs. If omitted, all capabilities are available. |
+| `Agent-Declaration` | OPTIONAL | URL to the agent operator's agents.txt file. Enables cross-referencing between platform and agent declarations. |
 
 **Agent Identification**: Agents SHOULD identify themselves via the `User-Agent` header. The agent name in `agents.txt` matches against the first token of the User-Agent string (case-insensitive).
 
@@ -225,6 +227,41 @@ Agents-JSON: https://example.com/.well-known/agents.json
 
 Any unrecognized top-level key-value pair is treated as metadata and preserved by parsers.
 
+### 3.8 Bidirectional Declarations
+
+agents.txt supports two declaration directions:
+
+**Platform declarations** (`Declaration-Type: platform` or omitted - this is the default):
+The file declares what agents can do on this site. This is the standard use case.
+
+**Agent declarations** (`Declaration-Type: agent`):
+The file declares what an agent does on external platforms. Published by the agent operator at their own domain.
+
+```
+# agents.txt - Agent Operator Declaration
+Spec-Version: 1.0
+Declaration-Type: agent
+Operates-On: https://x.com
+Operates-On: https://reddit.com
+
+Site-Name: Acme Social Bot
+Site-URL: https://bot.acme.com
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `Declaration-Type` | OPTIONAL | `platform` (default) or `agent`. |
+| `Operates-On` | OPTIONAL | URL of a platform this agent operates on. May appear multiple times. Expected when `Declaration-Type` is `agent`. |
+
+**The handshake**: A platform's agents.txt grants capabilities to named agents. An agent operator's agents.txt declares which capabilities the agent uses and on which platforms. The `Agent-Declaration` field in agent blocks (Section 3.6) allows platforms to cross-reference the agent operator's declaration:
+
+```
+Agent: acme-social-bot
+  Rate-Limit: 500/minute
+  Capabilities: search-posts, post-message
+  Agent-Declaration: https://bot.acme.com/.well-known/agents.txt
+```
+
 ## 4. JSON Format Specification
 
 The JSON format (`agents.json`) is the structured companion to the text format. It contains the same information in a typed JSON structure.
@@ -235,6 +272,8 @@ The JSON format (`agents.json`) is the structured companion to the text format. 
 {
   "specVersion": "1.0",
   "generatedAt": "2025-01-01T00:00:00.000Z",
+  "declarationType": "platform",
+  "operatesOn": [],
   "site": {
     "name": "Example Store",
     "url": "https://example.com",
@@ -285,14 +324,15 @@ The JSON format (`agents.json`) is the structured companion to the text format. 
 
 See the TypeScript type definitions in `@agents-txt/core` for the canonical schema. Key types:
 
-- `AgentsTxtDocument` — Root document
-- `SiteInfo` — Site metadata
-- `Capability` — Single capability declaration
-- `Protocol` — `"REST" | "MCP" | "A2A" | "GraphQL" | "WebSocket"`
-- `AuthConfig` — Authentication mechanism description
-- `RateLimit` — Rate limit declaration
-- `AccessControl` — Allow/disallow path patterns
-- `AgentPolicy` — Per-agent overrides
+- `AgentsTxtDocument` - Root document (includes `declarationType`, `operatesOn`)
+- `DeclarationType` - `"platform" | "agent"`
+- `SiteInfo` - Site metadata
+- `Capability` - Single capability declaration
+- `Protocol` - `"REST" | "MCP" | "A2A" | "GraphQL" | "WebSocket"`
+- `AuthConfig` - Authentication mechanism description
+- `RateLimit` - Rate limit declaration
+- `AccessControl` - Allow/disallow path patterns
+- `AgentPolicy` - Per-agent overrides (includes `agentDeclaration`)
 
 ## 5. Protocol Support
 
@@ -396,7 +436,7 @@ Valid windows: `second`, `minute`, `hour`, `day`.
 
 ### 7.2 Semantics
 
-- Rate limits are **advisory** — agents SHOULD respect them.
+- Rate limits are **advisory** - agents SHOULD respect them.
 - Servers MUST enforce rate limits independently (never trust client-side enforcement).
 - Capability-level rate limits apply to that specific endpoint.
 - Agent-level rate limits apply globally to that agent across all capabilities.
@@ -505,8 +545,8 @@ Capability: product-search
   Auth: none
   Rate-Limit: 60/minute
   Description: Search products by keyword
-  Param: q (query, string, required) — Search query
-  Param: limit (query, integer) — Results per page
+  Param: q (query, string, required) - Search query
+  Param: limit (query, integer) - Results per page
 
 Capability: browse-catalog
   Endpoint: https://coolstore.com/api/products
@@ -561,9 +601,92 @@ Agent: *
   Rate-Limit: 100/hour
 ```
 
+### 11.4 Social Platform
+
+A social platform declares capabilities for agent interactions - reading, posting, following, streaming. Per-agent policies control which bots get which capabilities.
+
+```
+# agents.txt
+Spec-Version: 1.0
+
+Site-Name: Social Platform
+Site-URL: https://social.example.com
+Site-Description: Social media platform - agent capabilities for the public API
+Site-Contact: api-support@social.example.com
+
+Capability: search-posts
+  Endpoint: https://api.social.example.com/v2/posts/search
+  Method: GET
+  Protocol: REST
+  Auth: bearer-token
+  Auth-Endpoint: https://api.social.example.com/oauth2/token
+  Rate-Limit: 300/minute
+  Description: Search recent posts by keyword or mention
+  Param: query (query, string, required) - Search query
+  Param: max_results (query, integer) - Results per page
+
+Capability: post-message
+  Endpoint: https://api.social.example.com/v2/posts
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.social.example.com/oauth2/token
+  Rate-Limit: 40/minute
+  Scopes: posts.write,users.read
+  Description: Post a new message
+
+Capability: reply-to-post
+  Endpoint: https://api.social.example.com/v2/posts
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.social.example.com/oauth2/token
+  Rate-Limit: 40/minute
+  Scopes: posts.write,users.read
+  Description: Reply to an existing post
+
+Capability: follow-user
+  Endpoint: https://api.social.example.com/v2/users/:id/following
+  Method: POST
+  Protocol: REST
+  Auth: oauth2
+  Auth-Endpoint: https://api.social.example.com/oauth2/token
+  Rate-Limit: 15/minute
+  Scopes: users.read,follows.write
+  Description: Follow a user account
+
+Capability: live-stream
+  Endpoint: wss://stream.social.example.com/v2/posts/filter
+  Protocol: WebSocket
+  Auth: bearer-token
+  Auth-Endpoint: https://api.social.example.com/oauth2/token
+  Description: Real-time filtered post stream
+
+Allow: /v2/posts/*
+Allow: /v2/users/*
+Disallow: /v2/admin/*
+
+# Default: read-only
+Agent: *
+  Rate-Limit: 100/minute
+  Capabilities: search-posts
+
+# Verified bot - full access
+Agent: acme-support-bot
+  Rate-Limit: 500/minute
+  Capabilities: search-posts, post-message, reply-to-post, follow-user, live-stream
+
+# News aggregator - read + post
+Agent: newsbot
+  Rate-Limit: 300/minute
+  Capabilities: search-posts, post-message, live-stream
+```
+
+For the full bidirectional pattern - including agent-operator-side declarations and the platform-agent handshake - see [examples/social-platform.md](examples/social-platform.md).
+
 ## References
 
-- [RFC 8615 — Well-Known URIs](https://www.rfc-editor.org/rfc/rfc8615)
-- [robots.txt — RFC 9309](https://www.rfc-editor.org/rfc/rfc9309)
+- [RFC 8615 - Well-Known URIs](https://www.rfc-editor.org/rfc/rfc8615)
+- [robots.txt - RFC 9309](https://www.rfc-editor.org/rfc/rfc9309)
 - [Model Context Protocol](https://modelcontextprotocol.io)
 - [Agent-to-Agent Protocol](https://google.github.io/A2A/)

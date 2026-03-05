@@ -1,20 +1,26 @@
 /**
- * agents.txt — Core Type System
+ * agents.txt - Core Type System
  *
  * These types define the complete agents.txt document structure.
  * A document declares what AI agents can DO on a website.
  */
 
-// ── Document ──
+// -- Document --
+
+export type DeclarationType = "platform" | "agent";
 
 export interface AgentsTxtDocument {
   /** Spec version (semver). Currently "1.0". */
   specVersion: string;
   /** ISO 8601 timestamp of when this file was generated. */
   generatedAt?: string;
+  /** Declaration type: "platform" (what agents can do here) or "agent" (what my agent does elsewhere). */
+  declarationType?: DeclarationType;
+  /** URLs of platforms this agent operates on (only for declarationType: "agent"). */
+  operatesOn?: string[];
   /** Site identity and metadata. */
   site: SiteInfo;
-  /** Capabilities the site offers to AI agents. */
+  /** Capabilities the site offers to AI agents (platform), or capabilities the agent uses (agent). */
   capabilities: Capability[];
   /** Path-based access control. */
   access: AccessControl;
@@ -24,7 +30,7 @@ export interface AgentsTxtDocument {
   metadata?: Record<string, string>;
 }
 
-// ── Site Info ──
+// -- Site Info --
 
 export interface SiteInfo {
   /** Human-readable site name. */
@@ -39,7 +45,7 @@ export interface SiteInfo {
   privacyPolicy?: string;
 }
 
-// ── Capabilities ──
+// -- Capabilities --
 
 export interface Capability {
   /** Unique identifier (lowercase, hyphens, e.g. "product-search"). */
@@ -88,7 +94,7 @@ export interface RateLimit {
 
 export type RateLimitWindow = "second" | "minute" | "hour" | "day";
 
-// ── Access Control ──
+// -- Access Control --
 
 export interface AccessControl {
   /** Glob patterns of allowed paths. */
@@ -97,16 +103,18 @@ export interface AccessControl {
   disallow: string[];
 }
 
-// ── Agent Policies ──
+// -- Agent Policies --
 
 export interface AgentPolicy {
   /** Override rate limit for this agent. */
   rateLimit?: RateLimit;
   /** List of capability IDs this agent is allowed to use. If omitted, all capabilities are allowed. */
   capabilities?: string[];
+  /** URL to the agent operator's agents.txt declaration. */
+  agentDeclaration?: string;
 }
 
-// ── Parameters ──
+// -- Parameters --
 
 export interface ParameterDef {
   /** Parameter name. */
@@ -127,7 +135,7 @@ export interface ParameterDef {
   min?: number;
 }
 
-// ── Parse/Validate Results ──
+// -- Parse/Validate Results --
 
 export interface ParseResult {
   success: boolean;

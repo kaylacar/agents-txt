@@ -70,6 +70,36 @@ describe("validate", () => {
     const result = validate(doc);
     expect(result.valid).toBe(true);
   });
+
+  it("warns when agent declaration has no Operates-On", () => {
+    const doc = makeValidDoc();
+    doc.declarationType = "agent";
+    const result = validate(doc);
+    expect(result.warnings.some((w) => w.code === "MISSING_OPERATES_ON")).toBe(true);
+  });
+
+  it("no warning when agent declaration has Operates-On", () => {
+    const doc = makeValidDoc();
+    doc.declarationType = "agent";
+    doc.operatesOn = ["https://x.com"];
+    const result = validate(doc);
+    expect(result.warnings.some((w) => w.code === "MISSING_OPERATES_ON")).toBe(false);
+  });
+
+  it("warns when Operates-On set without agent declaration type", () => {
+    const doc = makeValidDoc();
+    doc.operatesOn = ["https://x.com"];
+    const result = validate(doc);
+    expect(result.warnings.some((w) => w.code === "OPERATES_ON_WITHOUT_AGENT_TYPE")).toBe(true);
+  });
+
+  it("accepts platform declaration with no Operates-On", () => {
+    const doc = makeValidDoc();
+    doc.declarationType = "platform";
+    const result = validate(doc);
+    expect(result.warnings.some((w) => w.code === "MISSING_OPERATES_ON")).toBe(false);
+    expect(result.warnings.some((w) => w.code === "OPERATES_ON_WITHOUT_AGENT_TYPE")).toBe(false);
+  });
 });
 
 describe("validateText", () => {

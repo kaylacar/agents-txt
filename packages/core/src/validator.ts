@@ -50,6 +50,24 @@ export function validate(doc: AgentsTxtDocument): ValidationResult {
     }
   }
 
+  // Agent declaration: operatesOn should have entries when declarationType is "agent"
+  if (doc.declarationType === "agent" && (!doc.operatesOn || doc.operatesOn.length === 0)) {
+    warnings.push({
+      path: "operatesOn",
+      message: 'Agent declarations should include at least one Operates-On URL',
+      code: "MISSING_OPERATES_ON",
+    });
+  }
+
+  // operatesOn without declarationType: "agent" is suspicious
+  if (doc.operatesOn && doc.operatesOn.length > 0 && doc.declarationType !== "agent") {
+    warnings.push({
+      path: "declarationType",
+      message: 'Operates-On is set but Declaration-Type is not "agent"',
+      code: "OPERATES_ON_WITHOUT_AGENT_TYPE",
+    });
+  }
+
   // Site URL should be HTTPS
   if (doc.site.url && !doc.site.url.startsWith("https://")) {
     warnings.push({

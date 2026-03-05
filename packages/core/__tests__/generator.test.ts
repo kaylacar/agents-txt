@@ -116,6 +116,38 @@ describe("generate (text format)", () => {
     const txt = generate(makeDoc());
     expect(txt.endsWith("\n")).toBe(true);
   });
+
+  it("includes Declaration-Type when set", () => {
+    const txt = generate(makeDoc({ declarationType: "agent" }));
+    expect(txt).toContain("Declaration-Type: agent");
+  });
+
+  it("includes Operates-On lines when set", () => {
+    const txt = generate(makeDoc({
+      declarationType: "agent",
+      operatesOn: ["https://x.com", "https://reddit.com"],
+    }));
+    expect(txt).toContain("Operates-On: https://x.com");
+    expect(txt).toContain("Operates-On: https://reddit.com");
+  });
+
+  it("omits Declaration-Type when not set", () => {
+    const txt = generate(makeDoc());
+    expect(txt).not.toContain("Declaration-Type:");
+    expect(txt).not.toContain("Operates-On:");
+  });
+
+  it("includes Agent-Declaration in agent blocks", () => {
+    const doc = makeDoc();
+    doc.agents["acme-bot"] = {
+      rateLimit: { requests: 500, window: "minute" },
+      capabilities: ["product-search"],
+      agentDeclaration: "https://bot.acme.com/.well-known/agents.txt",
+    };
+    const txt = generate(doc);
+    expect(txt).toContain("Agent: acme-bot");
+    expect(txt).toContain("  Agent-Declaration: https://bot.acme.com/.well-known/agents.txt");
+  });
 });
 
 describe("generateJSON", () => {
