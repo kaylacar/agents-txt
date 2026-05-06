@@ -1,8 +1,8 @@
 ---
-title: The "agents.txt" and "agents.json" Well-Known URIs
+title: "AGENTS.TXT: Capability Declarations for Web Agents"
 abbrev: agents-txt
 docname: draft-car-agents-txt-wellknown-00
-date: 2026-02
+date: 2026-05-05
 category: info
 ipr: trust200902
 area: Applications and Real-Time
@@ -11,9 +11,11 @@ workgroup: Independent Submission
 keyword:
   - AI agents
   - well-known URI
+  - capability declaration
   - capability discovery
   - MCP
   - Model Context Protocol
+  - A2A
 
 stand_alone: yes
 
@@ -26,7 +28,7 @@ author:
   - ins: K. Car
     name: Kayla Car
     organization: Independent
-    email: YOUR_EMAIL_HERE
+    email: contactkaylacard@gmail.com
 
 normative:
   RFC2119:
@@ -49,19 +51,43 @@ informative:
     title: "llms.txt"
     target: https://llmstxt.org
     date: 2024
+  SRIJAL-AGENTS-POLICY:
+    title: "AGENTS.TXT: Strict Policy File for Automated Clients"
+    target: https://datatracker.ietf.org/doc/draft-srijal-agents-policy/
+    date: 2025
+    seriesinfo:
+      Internet-Draft: draft-srijal-agents-policy-00 (expired)
+  MCP-SERVER-CARD:
+    title: "Model Context Protocol Server Card"
+    target: https://modelcontextprotocol.io
+    date: 2024
+  A2A-AGENT-CARD:
+    title: "A2A Agent Card"
+    target: https://a2aproject.github.io/
+    date: 2025
 
 --- abstract
 
 This document registers two Well-Known URIs under the "/.well-known/"
 path: "agents.txt" and "agents.json". These URIs define a
-machine-readable capability declaration format that allows website
-operators to declare what AI agents may do on their site, which
-endpoints and protocols are available, what authentication mechanisms
-are required, and what rate limits agents should respect.
+machine-readable capability declaration format: a positive statement of
+what web agents CAN do on a site — which endpoints are sanctioned for
+agent use, which protocols (REST, MCP, A2A, GraphQL, WebSocket) are
+supported, what authentication mechanisms are expected, and what rate
+limits the site advertises.
 
-The format is designed to be complementary to "robots.txt" {{ROBOTS}},
-which controls crawl access. Where "robots.txt" declares restrictions,
-"agents.txt" declares capabilities and sanctioned interaction patterns.
+This is distinct from "robots.txt" {{ROBOTS}}, which uses a restriction
+syntax to declare what crawlers MUST NOT do. Where "robots.txt"
+expresses prohibition, "agents.txt" expresses capability — a sanctioned
+channel for agent interaction that is otherwise routinely blocked by
+bot detection, CAPTCHAs, and rate limiters because no positive
+declaration surface exists.
+
+A separate, expired Internet-Draft {{SRIJAL-AGENTS-POLICY}} previously
+proposed a path-based ALLOW/DISALLOW policy file under the same name.
+The present document takes a different design approach (typed
+capability blocks, protocol declarations, endpoint discovery) and is
+not a revision of that draft.
 
 --- middle
 
@@ -111,6 +137,41 @@ OpenAPI:
 MCP (Model Context Protocol):
 : A protocol for AI tools. "agents.txt" can declare MCP endpoints,
   making them discoverable without prior configuration.
+
+## Related Work
+
+The following efforts overlap with or are adjacent to this document.
+None of them provide a site-side capability declaration in the form
+defined here.
+
+draft-srijal-agents-policy-00 (expired) {{SRIJAL-AGENTS-POLICY}}:
+: A prior Internet-Draft using the "AGENTS.TXT" name. Its design is a
+  strict policy file with path-based ALLOW/DISALLOW directives modeled
+  on "robots.txt". It expired April 2026 with no -01 revision. The
+  present document differs in scope (capability declaration, not
+  policy restriction) and structure (typed capability and agent blocks
+  with protocol and authentication metadata).
+
+MCP server-card.json {{MCP-SERVER-CARD}}:
+: The Model Context Protocol defines a "/.well-known/mcp/server-card.json"
+  file describing an individual MCP server's tools and resources.
+  "agents.txt" operates one layer up: it declares that a site offers
+  capabilities, including (optionally) MCP endpoints, and points to the
+  MCP server-card for tool-level detail. The two are complementary.
+
+A2A agent-card.json {{A2A-AGENT-CARD}}:
+: The Agent-to-Agent (A2A) protocol defines a
+  "/.well-known/agent-card.json" file describing the capabilities of a
+  single agent endpoint. "agents.txt" operates at the site level and
+  may reference one or more A2A agent cards via Capability blocks with
+  Protocol: A2A.
+
+llms.txt {{LLMSTXT}}:
+: A site-level Markdown file at "/llms.txt" that summarizes site
+  content for LLM consumption. It is a content-summary surface, not a
+  capability declaration. "agents.txt" and "llms.txt" can coexist on
+  the same site without conflict; they answer different questions
+  ("what content is here" vs. "what actions are sanctioned").
 
 ## Requirements Language
 
