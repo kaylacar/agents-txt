@@ -1,10 +1,14 @@
 # agents.txt
 
-An open standard for declaring what AI agents can do on your website.
+**Capability declaration for web agents.** A site's positive statement of what AI agents CAN do — which endpoints are sanctioned for agent use, which protocols are supported, what authentication is expected, what advisory rate limits apply.
 
-**robots.txt tells agents what NOT to do. agents.txt tells them what they CAN do.**
+This is the inversion of `robots.txt`. Where `robots.txt` uses a restriction syntax to declare what crawlers MUST NOT do, `agents.txt` declares the sanctioned channel for agent interaction that is otherwise routinely blocked by bot detection, CAPTCHAs, and rate limiters because no positive declaration surface exists.
 
+**Status**
 
+- IETF Internet-Draft: `draft-car-agents-txt-wellknown-00` (filed locally; pending Datatracker submission). See [`ietf/draft-car-agents-txt-wellknown-00.md`](ietf/draft-car-agents-txt-wellknown-00.md).
+- IANA Well-Known URI registrations: `agents.txt` (#72) and `agents.json` (#73) — filed, under review.
+- Spec version 1.0. npm packages published.
 
 ## For Humans
 
@@ -215,7 +219,31 @@ If you want a batteries-included framework rather than the low-level standard, s
 
 ## IANA Registration
 
-Well-known URI registrations for `agents.txt`, `agents.json`, `agent.txt`, and `agent.json` are filed with IANA (pending review).
+Well-known URI registrations are filed, under review:
+
+- `agents.txt` — filing #72
+- `agents.json` — filing #73
+
+Filings #74 (`agent.txt`) and #75 (`agent.json`) are open as singular aliases.
+
+## Standards Track
+
+The IETF Internet-Draft for this work is [`ietf/draft-car-agents-txt-wellknown-00.md`](ietf/draft-car-agents-txt-wellknown-00.md): "AGENTS.TXT: Capability Declarations for Web Agents." The draft is written and pending submission to Datatracker.
+
+A separate, expired Internet-Draft (`draft-srijal-agents-policy-00`, expired April 2026) previously used the AGENTS.TXT name for a path-based ALLOW/DISALLOW policy file modeled on robots.txt. This draft is a different design — typed capability blocks, protocol declarations, endpoint discovery — and is not a revision of that draft. The title was set to "Capability Declarations for Web Agents" to make the distinction explicit.
+
+## Related Work
+
+`agents.txt` sits next to several adjacent standards. None of them provide a site-side capability declaration in the form defined here.
+
+| Standard | Layer | Relationship |
+|----------|-------|--------------|
+| `robots.txt` ([RFC 9309](https://www.rfc-editor.org/rfc/rfc9309)) | Site-wide crawl restriction | Complementary. robots.txt prohibits; agents.txt sanctions. Both files coexist. |
+| MCP `/.well-known/mcp/server-card.json` | Tool/server detail for Model Context Protocol | Complementary. agents.txt operates one layer up: it declares that a site offers capabilities, which may include MCP endpoints, and points to the MCP server-card for tool-level detail. |
+| A2A `/.well-known/agent-card.json` | Single-agent endpoint descriptor for agent-to-agent | Complementary. agents.txt operates at the site level and may reference one or more A2A agent cards via Capability blocks with `Protocol: A2A`. |
+| `llms.txt` (`/llms.txt`) | LLM-readable site content summary | Friend, not competitor. llms.txt summarizes content for LLM consumption; agents.txt declares sanctioned actions. Different questions, designed to coexist. |
+| `security.txt` ([RFC 9116](https://www.rfc-editor.org/rfc/rfc9116)) | Vulnerability disclosure contacts | Adjacent. Same well-known-file pattern; different domain. |
+| OpenAPI | Per-endpoint API documentation | Complementary. agents.txt is a discovery layer; capabilities MAY reference an OpenAPI document for per-endpoint detail. |
 
 ## The Stack
 
