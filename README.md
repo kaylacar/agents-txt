@@ -6,7 +6,7 @@ This is the inversion of `robots.txt`. Where `robots.txt` uses a restriction syn
 
 **Status**
 
-- IETF Internet-Draft: `draft-car-agents-txt-wellknown-00` (filed locally; pending Datatracker submission). See [`ietf/draft-car-agents-txt-wellknown-00.md`](ietf/draft-car-agents-txt-wellknown-00.md).
+- IETF Internet-Draft: [`draft-car-agents-txt-wellknown-00`](https://datatracker.ietf.org/doc/draft-car-agents-txt-wellknown/) — published on the Datatracker as an individual submission (under review, not adopted; expires 2026-12-14). Local source: [`ietf/draft-car-agents-txt-wellknown-00.md`](ietf/draft-car-agents-txt-wellknown-00.md).
 - IANA Well-Known URI registrations: `agents.txt` (#72) and `agents.json` (#73) — filed, under review.
 - Spec version 1.0. npm packages published.
 
@@ -228,7 +228,7 @@ Filings #74 (`agent.txt`) and #75 (`agent.json`) are open as singular aliases.
 
 ## Standards Track
 
-The IETF Internet-Draft for this work is [`ietf/draft-car-agents-txt-wellknown-00.md`](ietf/draft-car-agents-txt-wellknown-00.md): "AGENTS.TXT: Capability Declarations for Web Agents." The draft is written and pending submission to Datatracker.
+The IETF Internet-Draft for this work is ["AGENTS.TXT: Capability Declarations for Web Agents"](https://datatracker.ietf.org/doc/draft-car-agents-txt-wellknown/), published on the Datatracker as an individual submission — under review, not adopted (expires 2026-12-14). Local source: [`ietf/draft-car-agents-txt-wellknown-00.md`](ietf/draft-car-agents-txt-wellknown-00.md).
 
 A separate, expired Internet-Draft (`draft-srijal-agents-policy-00`, expired April 2026) previously used the AGENTS.TXT name for a path-based ALLOW/DISALLOW policy file modeled on robots.txt. This draft is a different design — typed capability blocks, protocol declarations, endpoint discovery — and is not a revision of that draft. The title was set to "Capability Declarations for Web Agents" to make the distinction explicit.
 

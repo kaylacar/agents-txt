@@ -27,19 +27,22 @@ export class AgentsTxtClient {
   }
 
   /**
-   * Discover agents.txt from a site. Tries /.well-known/agents.txt first,
-   * falls back to /agents.txt.
+   * Discover agents declarations from a site. Tries JSON first, then text.
    */
   async discover(baseUrl: string): Promise<ParseResult> {
     const normalized = baseUrl.replace(/\/+$/, "");
 
-    // Try well-known first
-    const primary = await this.fetchText(`${normalized}${WELL_KNOWN_TXT}`);
-    if (primary) return parse(primary);
+    const wellKnownJson = await this.fetchText(`${normalized}${WELL_KNOWN_JSON}`);
+    if (wellKnownJson) return parseJSON(wellKnownJson);
 
-    // Fallback
-    const fallback = await this.fetchText(`${normalized}${FALLBACK_TXT}`);
-    if (fallback) return parse(fallback);
+    const fallbackJson = await this.fetchText(`${normalized}${FALLBACK_JSON}`);
+    if (fallbackJson) return parseJSON(fallbackJson);
+
+    const wellKnownTxt = await this.fetchText(`${normalized}${WELL_KNOWN_TXT}`);
+    if (wellKnownTxt) return parse(wellKnownTxt);
+
+    const fallbackTxt = await this.fetchText(`${normalized}${FALLBACK_TXT}`);
+    if (fallbackTxt) return parse(fallbackTxt);
 
     return {
       success: false,

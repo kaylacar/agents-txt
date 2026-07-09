@@ -102,6 +102,13 @@ describe("agentsTxt middleware", () => {
     expect(res.status).toBe(204);
   });
 
+  it("rejects unsupported methods", async () => {
+    const app = createApp();
+    const res = await request(app, "/.well-known/agents.txt", { method: "POST" });
+    expect(res.status).toBe(405);
+    expect(res.headers.get("allow")).toContain("GET");
+  });
+
   it("sets cache-control", async () => {
     const app = createApp();
     const res = await request(app, "/.well-known/agents.txt");

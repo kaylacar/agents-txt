@@ -69,6 +69,12 @@ export function agentsTxt(options: AgentsTxtOptions) {
       return;
     }
 
+    if (req.method !== "GET") {
+      res.setHeader("Allow", "GET, OPTIONS");
+      res.status(405).end();
+      return;
+    }
+
     // Rate limiting
     if (rateLimiter) {
       const ip = req.ip ?? req.socket?.remoteAddress ?? "unknown";
