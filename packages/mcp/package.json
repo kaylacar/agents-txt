@@ -1,6 +1,6 @@
 {
     "name":  "@agents-txt/mcp",
-    "version":  "0.1.0",
+    "version":  "0.1.1",
     "description":  "MCP server that wraps any agents.txt-compliant website - instantly usable by Claude Desktop and other MCP clients",
     "type":  "module",
     "main":  "./dist/index.cjs",

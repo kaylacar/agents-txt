@@ -1,8 +1,8 @@
----
+﻿---
 title: "AGENTS.TXT: Capability Declarations for Web Agents"
 abbrev: agents-txt
 docname: draft-car-agents-txt-wellknown-00
-date: 2026-05-05
+date: 2026-06-12
 category: info
 ipr: trust200902
 area: Applications and Real-Time
@@ -25,8 +25,8 @@ pi:
   symrefs: yes
 
 author:
-  - ins: K. Car
-    name: Kayla Car
+  - ins: K. Cardillo
+    name: Kayla Cardillo
     organization: Independent
     email: contactkaylacard@gmail.com
 
@@ -57,6 +57,10 @@ informative:
     date: 2025
     seriesinfo:
       Internet-Draft: draft-srijal-agents-policy-00 (expired)
+  MCP:
+    title: "Model Context Protocol"
+    target: https://modelcontextprotocol.io/specification
+    date: 2025
   MCP-SERVER-CARD:
     title: "Model Context Protocol Server Card"
     target: https://modelcontextprotocol.io
@@ -68,26 +72,20 @@ informative:
 
 --- abstract
 
-This document registers two Well-Known URIs under the "/.well-known/"
-path: "agents.txt" and "agents.json". These URIs define a
+This document requests registration of two Well-Known URIs under the
+"/.well-known/" path: "agents.txt" and "agents.json". These URIs define a
 machine-readable capability declaration format: a positive statement of
-what web agents CAN do on a site — which endpoints are sanctioned for
+what web agents CAN do on a site -- which endpoints are sanctioned for
 agent use, which protocols (REST, MCP, A2A, GraphQL, WebSocket) are
 supported, what authentication mechanisms are expected, and what rate
 limits the site advertises.
 
-This is distinct from "robots.txt" {{ROBOTS}}, which uses a restriction
-syntax to declare what crawlers MUST NOT do. Where "robots.txt"
-expresses prohibition, "agents.txt" expresses capability — a sanctioned
+This is distinct from "robots.txt", which uses a restriction
+syntax to declare what crawlers may not do. Where "robots.txt"
+expresses prohibition, "agents.txt" expresses capability -- a sanctioned
 channel for agent interaction that is otherwise routinely blocked by
 bot detection, CAPTCHAs, and rate limiters because no positive
 declaration surface exists.
-
-A separate, expired Internet-Draft {{SRIJAL-AGENTS-POLICY}} previously
-proposed a path-based ALLOW/DISALLOW policy file under the same name.
-The present document takes a different design approach (typed
-capability blocks, protocol declarations, endpoint discovery) and is
-not a revision of that draft.
 
 --- middle
 
@@ -242,6 +240,18 @@ Spec-Version (REQUIRED):
 Generated-At (OPTIONAL):
 : ISO 8601 timestamp of when the file was generated.
 
+Declaration-Type (OPTIONAL):
+: One of "platform" or "agent". Default: "platform". A platform
+  declaration states what agents may do on this site (the standard
+  case). An agent declaration, published by an agent operator at the
+  operator's own domain, states what the operator's agent does on
+  external platforms.
+
+Operates-On (OPTIONAL):
+: URL of a platform this agent operates on. MAY appear multiple
+  times. Expected when Declaration-Type is "agent"; not used in
+  platform declarations.
+
 ## Site Fields
 
 Site-Name (REQUIRED):
@@ -283,8 +293,15 @@ Auth (OPTIONAL):
   this field.
 
 Auth-Endpoint (OPTIONAL):
-: URL where agents obtain authentication tokens. Required when Auth is
-  "bearer-token" or "oauth2".
+: URL where agents obtain authentication tokens. MUST be present when
+  Auth is "bearer-token" or "oauth2".
+
+Auth-Docs (OPTIONAL):
+: URL of human-readable documentation describing the authentication
+  flow for this capability.
+
+Scopes (OPTIONAL):
+: Comma-separated list of OAuth2 scopes required by this capability.
 
 Rate-Limit (OPTIONAL):
 : Advisory rate limit in the format "N/window" where window is one of:
@@ -296,6 +313,27 @@ Description (OPTIONAL):
 
 OpenAPI (OPTIONAL):
 : URL to an OpenAPI specification document describing the endpoint.
+
+Param (OPTIONAL):
+: Declares one parameter of a REST endpoint. MAY appear multiple
+  times within a Capability block. The value uses the form:
+
+~~~
+name (location, type[, required]) [- description]
+~~~
+
+: where "location" is one of "query", "path", "header", or "body";
+  "type" is one of "string", "integer", "number", or "boolean"; the
+  literal token "required", when present, marks the parameter as
+  required; and the free-text description after "-" is optional.
+  Example:
+
+~~~
+Param: q (query, string, required) - Search query
+~~~
+
+Fields not defined in this document MUST be ignored by parsers, to
+permit forward-compatible extension.
 
 ## Access Control Fields
 
@@ -330,6 +368,12 @@ Capabilities (OPTIONAL within an Agent block):
 : Comma-separated list of capability identifiers this agent is
   permitted to use. If omitted, all declared capabilities are
   permitted.
+
+Agent-Declaration (OPTIONAL within an Agent block):
+: URL of the agent operator's own "agents.txt" file (a declaration
+  with Declaration-Type "agent"). Enables cross-referencing between a
+  platform's grant of capabilities and the agent operator's published
+  statement of what the agent does and where it operates.
 
 # The "agents.json" Well-Known URI
 
@@ -461,7 +505,7 @@ URI suffix:
 : agents.txt
 
 Change controller:
-: Kayla Car
+: Kayla Cardillo
 
 Specification document(s):
 : This document.
@@ -475,7 +519,7 @@ URI suffix:
 : agents.json
 
 Change controller:
-: Kayla Car
+: Kayla Cardillo
 
 Specification document(s):
 : This document.

@@ -9,9 +9,9 @@ export function generate(doc: AgentsTxtDocument): string {
 
   // Header
   lines.push("# agents.txt - AI Agent Capability Declaration");
-  lines.push(`# Spec-Version: ${doc.specVersion}`);
+  lines.push(`Spec-Version: ${doc.specVersion}`);
   if (doc.generatedAt) {
-    lines.push(`# Generated: ${doc.generatedAt}`);
+    lines.push(`Generated-At: ${doc.generatedAt}`);
   }
   lines.push("");
 

@@ -7,8 +7,8 @@ Site-URL: https://example.com
 `;
 
 const FULL_DOC = `# agents.txt - AI Agent Capability Declaration
-# Spec-Version: 1.0
-# Generated: 2026-01-01T00:00:00.000Z
+Spec-Version: 1.0
+Generated-At: 2026-01-01T00:00:00.000Z
 
 Site-Name: Example Store
 Site-URL: https://example.com
@@ -110,6 +110,57 @@ describe("parse", () => {
     expect(result.document!.metadata?.["Agents-JSON"]).toBe("https://example.com/.well-known/agents.json");
   });
 
+  it("parses real-field Spec-Version and Generated-At without leaking into metadata", () => {
+    const result = parse(FULL_DOC);
+    expect(result.document!.specVersion).toBe("1.0");
+    expect(result.document!.generatedAt).toBe("2026-01-01T00:00:00.000Z");
+    expect(result.document!.metadata?.["Spec-Version"]).toBeUndefined();
+    expect(result.document!.metadata?.["Generated-At"]).toBeUndefined();
+  });
+
+  it("accepts legacy comment-form Spec-Version and Generated headers", () => {
+    const doc = `# Spec-Version: 1.1
+# Generated: 2025-12-31T00:00:00.000Z
+Site-Name: Legacy
+Site-URL: https://legacy.example.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.specVersion).toBe("1.1");
+    expect(result.document!.generatedAt).toBe("2025-12-31T00:00:00.000Z");
+  });
+
+  it("accepts legacy comment-form Generated-At header", () => {
+    const doc = `# Generated-At: 2025-12-31T00:00:00.000Z
+Site-Name: Legacy
+Site-URL: https://legacy.example.com
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.document!.generatedAt).toBe("2025-12-31T00:00:00.000Z");
+  });
+
+  it("normalizes agent names to lowercase", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Agent: Claude
+  Rate-Limit: 200/minute
+Agent: GPTBot
+  Rate-Limit: 100/minute
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    const agents = result.document!.agents;
+    expect(agents["claude"]).toBeDefined();
+    expect(agents["claude"].rateLimit?.requests).toBe(200);
+    expect(agents["gptbot"]).toBeDefined();
+    expect(agents["gptbot"].rateLimit?.requests).toBe(100);
+    expect(agents["Claude"]).toBeUndefined();
+    expect(agents["GPTBot"]).toBeUndefined();
+  });
+
   it("fails on missing Site-Name", () => {
     const result = parse("Site-URL: https://example.com\n");
     expect(result.success).toBe(false);
@@ -174,6 +225,28 @@ Capability: search
     expect(params[2].name).toBe("category");
     expect(params[2].required).toBe(false);
     expect(params[2].description).toBeUndefined();
+  });
+
+  it("parses dotted Param names", () => {
+    const doc = `
+Site-Name: Test
+Site-URL: https://test.com
+
+Capability: reply-to-tweet
+  Endpoint: https://test.com/api/tweets
+  Protocol: REST
+  Param: reply.in_reply_to_tweet_id (body, string, required) - ID of post being replied to
+`;
+    const result = parse(doc);
+    expect(result.success).toBe(true);
+    expect(result.warnings.some((w) => w.message.includes("Invalid parameter"))).toBe(false);
+    const params = result.document!.capabilities[0].parameters!;
+    expect(params).toHaveLength(1);
+    expect(params[0].name).toBe("reply.in_reply_to_tweet_id");
+    expect(params[0].in).toBe("body");
+    expect(params[0].type).toBe("string");
+    expect(params[0].required).toBe(true);
+    expect(params[0].description).toBe("ID of post being replied to");
   });
 
   it("accepts Site-Description, Site-Contact, Site-Privacy-Policy field names", () => {

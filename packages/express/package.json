@@ -1,6 +1,6 @@
 {
     "name":  "@agents-txt/express",
-    "version":  "0.1.0",
+    "version":  "0.1.1",
     "description":  "Express middleware for serving agents.txt - one line to make your site AI-agent ready",
     "type":  "module",
     "main":  "./dist/index.cjs",

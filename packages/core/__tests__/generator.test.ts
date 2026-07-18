@@ -48,9 +48,20 @@ function makeDoc(overrides: Partial<AgentsTxtDocument> = {}): AgentsTxtDocument 
 }
 
 describe("generate (text format)", () => {
-  it("includes spec version in header comment", () => {
+  it("emits Spec-Version and Generated-At as real fields, not comments", () => {
     const txt = generate(makeDoc());
-    expect(txt).toContain("# Spec-Version: 1.0");
+    expect(txt).toContain("\nSpec-Version: 1.0\n");
+    expect(txt).toContain("\nGenerated-At: 2026-01-01T00:00:00.000Z\n");
+    expect(txt).not.toContain("# Spec-Version:");
+    expect(txt).not.toContain("# Generated:");
+    expect(txt).not.toContain("# Generated-At:");
+  });
+
+  it("omits Generated-At when not set", () => {
+    const doc = makeDoc();
+    delete doc.generatedAt;
+    const txt = generate(doc);
+    expect(txt).not.toContain("Generated-At:");
   });
 
   it("includes site info", () => {

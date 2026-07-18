@@ -7,6 +7,7 @@ import type { AgentsTxtDocument } from "../src/types.js";
 
 const testDoc: AgentsTxtDocument = {
   specVersion: "1.0",
+  generatedAt: "2026-01-01T00:00:00.000Z",
   site: {
     name: "Roundtrip Store",
     url: "https://roundtrip.example.com",
@@ -45,6 +46,42 @@ const testDoc: AgentsTxtDocument = {
 };
 
 describe("roundtrip: generate -> parse", () => {
+  it("text roundtrip preserves Spec-Version and Generated-At as real fields", () => {
+    const text = generate(testDoc);
+    const result = parse(text);
+    expect(result.success).toBe(true);
+    expect(result.document?.specVersion).toBe("1.0");
+    expect(result.document?.generatedAt).toBe("2026-01-01T00:00:00.000Z");
+    // No stray Spec-Version / Generated-At in metadata
+    expect(result.document?.metadata?.["Spec-Version"]).toBeUndefined();
+    expect(result.document?.metadata?.["Generated-At"]).toBeUndefined();
+  });
+
+  it("text roundtrip is stable across a second generate -> parse cycle", () => {
+    const text1 = generate(testDoc);
+    const doc1 = parse(text1).document!;
+    const text2 = generate(doc1);
+    const doc2 = parse(text2).document!;
+    expect(doc2).toEqual(doc1);
+    expect(text2).toEqual(text1);
+  });
+
+  it("JSON parse normalizes agent names to lowercase", () => {
+    const mixedCase: AgentsTxtDocument = {
+      ...testDoc,
+      agents: {
+        "*": {},
+        Claude: { rateLimit: { requests: 200, window: "minute" } },
+      },
+    };
+    const result = parseJSON(generateJSON(mixedCase));
+    expect(result.success).toBe(true);
+    expect(result.document?.agents["claude"]).toBeDefined();
+    expect(result.document?.agents["claude"].rateLimit?.requests).toBe(200);
+    expect(result.document?.agents["Claude"]).toBeUndefined();
+    expect(result.document?.agents["*"]).toEqual({});
+  });
+
   it("text roundtrip preserves site info", () => {
     const text = generate(testDoc);
     const result = parse(text);

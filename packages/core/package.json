@@ -1,6 +1,6 @@
 {
     "name":  "@agents-txt/core",
-    "version":  "0.1.0",
+    "version":  "0.1.1",
     "description":  "Parser, generator, and validator for the agents.txt web standard",
     "type":  "module",
     "main":  "./dist/index.cjs",

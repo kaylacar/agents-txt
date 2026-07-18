@@ -75,12 +75,11 @@ export function parse(input: string): ParseResult {
     const raw = lines[i];
     const trimmed = raw.trim();
 
-    // Skip empty lines and comments
+    // Skip empty lines and comments (accept legacy # Spec-Version / # Generated forms for backward compat)
     if (trimmed === "" || trimmed.startsWith("#")) {
-      // Extract spec version and generated date from comments
       const specMatch = trimmed.match(/^#\s*Spec-Version:\s*(.+)/i);
       if (specMatch) specVersion = specMatch[1].trim();
-      const genMatch = trimmed.match(/^#\s*Generated:\s*(.+)/i);
+      const genMatch = trimmed.match(/^#\s*Generated(?:-At)?:\s*(.+)/i);
       if (genMatch) generatedAt = genMatch[1].trim();
       continue;
     }
@@ -196,6 +195,8 @@ export function parse(input: string): ParseResult {
     const value = trimmed.slice(colonIdx + 1).trim();
 
     switch (key) {
+      case "Spec-Version": specVersion = value; break;
+      case "Generated-At": generatedAt = value; break;
       case "Site-Name": site.name = value; break;
       case "Site-URL": site.url = value; break;
       case "Description":
@@ -220,7 +221,8 @@ export function parse(input: string): ParseResult {
         state = "IN_CAPABILITY";
         break;
       case "Agent":
-        currentAgentName = value;
+        // Agent names are matched case-insensitively per the spec; normalize to lowercase.
+        currentAgentName = value.toLowerCase();
         currentAgentPolicy = {};
         state = "IN_AGENT";
         break;
@@ -271,8 +273,9 @@ export function parse(input: string): ParseResult {
  */
 function parseParam(value: string): ParameterDef | null {
   // Format: name (location, type[, required]) [- description]
+  // Name allows dots for nested/structured parameter names (e.g. reply.in_reply_to_tweet_id).
   const match = value.match(
-    /^(\w+)\s*\(\s*(\w+)\s*,\s*(\w+)(?:\s*,\s*(required))?\s*\)(?:\s*-\s*(.+))?$/,
+    /^([\w.]+)\s*\(\s*(\w+)\s*,\s*(\w+)(?:\s*,\s*(required))?\s*\)(?:\s*-\s*(.+))?$/,
   );
   if (!match) return null;
 
